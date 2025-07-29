@@ -1,5 +1,43 @@
 package com.standingcat.event.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class Event
 {
+    //event should have enrollments
+    //event should have id, title, image url, description, event time, owner
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //strategy is automatic
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false, length = 1000)
+    private String description;
+
+    private String imageUrl;
+
+    @Column(nullable = false)
+    private LocalDateTime eventTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Enrollment> enrollments;
+    private boolean isHidden = false;
+
+
 }
