@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "event_id"})) //to prevent duplicate enrollments
 public class Enrollment {
     //gonna have id, event id, user id, time enrolled
     @Id
