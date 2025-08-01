@@ -117,7 +117,7 @@ class UserServiceTest {
     @Test
     void register_email_taken() {
         //if username is taken, user should not be registered
-        when(userRepository.findByEmail(newUser.getUsername())).thenReturn(Optional.of(new User()));
+        when(userRepository.findByEmail(newUser.getEmail())).thenReturn(Optional.of(new User()));
         IllegalArgumentException thrown = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.registerNewUser(newUser),
