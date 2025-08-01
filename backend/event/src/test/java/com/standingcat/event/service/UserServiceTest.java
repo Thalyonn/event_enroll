@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -142,4 +143,93 @@ class UserServiceTest {
     }
 
     //make test for admin user
+    @Test
+    void register_admin_username_and_email_not_taken() {
+        //if username is not taken, and email is not taken, user should be registered
+
+        User newAdmin = newUser;
+
+        //mock username and email repository returning empty
+        when(userRepository.findByUsername(newAdmin.getUsername())).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(newAdmin.getEmail())).thenReturn(Optional.empty());
+
+        User savedUser = new User(
+                1L, //fake id, any long
+                newUser.getUsername(),
+                encodedPassword,
+                newUser.getEmail(),
+                Set.of("ROLE_USER", "ROLE_ADMIN"),
+                null,
+                null
+        );
+        //save any User.class as object passed to the service may change by the service
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        //mock the behavior of the passwordEncoder.encode method.
+        //when encode is called with 'rawPassword', it should return 'encodedPassword'.
+        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+
+        //call the actual method
+        User registeredUser = userService.createAdminUser(newAdmin);
+
+
+
+        //verify the calls in when were actually used and verify number of calls.
+        verify(userRepository, times(1)).findByUsername(newUser.getUsername());
+        verify(userRepository, times(1)).findByEmail(newUser.getEmail());
+        verify(passwordEncoder, times(1)).encode(rawPassword);
+        verify(userRepository, times(1)).save(any(User.class));
+
+        assertNotNull(registeredUser, "Registered user shouldn't be null");
+        assertEquals(savedUser.getId(), registeredUser.getId(), "ID should be properly set by repository.");
+        assertEquals(newUser.getUsername(), registeredUser.getUsername(), "Username should match");
+        assertEquals(encodedPassword, registeredUser.getPassword(), "Password should be encoded");
+        assertEquals(newUser.getEmail(), registeredUser.getEmail(), "Email should match");
+        assertTrue(registeredUser.getRoles().contains("ROLE_USER"), "Admin should have ROLE_USER");
+        assertTrue(registeredUser.getRoles().contains("ROLE_ADMIN"), "Admin should have ROLE_ADMIN");
+        assertEquals(2, registeredUser.getRoles().size(), "Admin should have two roles");
+
+
+    }
+
+    void admin_register_email_taken() {
+        //if username is taken, user should not be registered
+        when(userRepository.findByEmail(newUser.getEmail())).thenReturn(Optional.of(new User()));
+        EmailAlreadyRegisteredException thrown = assertThrows(
+                EmailAlreadyRegisteredException.class,
+                () -> userService.createAdminUser(newUser),
+                "Should throw IllegalArgumentException when email is taken"
+        );
+        //assert the exception message contains the expected text
+        assertTrue(thrown.getMessage().contains("Email is already taken."),
+                "Exception message should indicate email is already taken");
+
+        //verify that findByUsername was called, but other methods weren't called
+        verify(userRepository, times(1)).findByUsername(newUser.getUsername());
+        verify(userRepository, times(1)).findByEmail(newUser.getEmail());
+        verify(passwordEncoder, never()).encode(anyString()); //password encoding should not happen
+        verify(userRepository, never()).save(any(User.class)); //no user should be saved
+
+    }
+
+    @Test
+    void admin_register_username_taken() {
+        //if username is taken, user should not be registered
+        when(userRepository.findByUsername(newUser.getUsername())).thenReturn(Optional.of(new User()));
+        UsernameAlreadyTakenException thrown = assertThrows(
+                UsernameAlreadyTakenException.class,
+                () -> userService.createAdminUser(newUser),
+                "Should throw IllegalArgumentException when username is taken"
+        );
+        //assert the exception message contains the expected text
+        assertTrue(thrown.getMessage().contains("Username is already taken!"),
+                "Exception message should indicate username is already taken");
+
+        //verify that findByUsername was called, but other methods weren't called
+        verify(userRepository, times(1)).findByUsername(newUser.getUsername());
+        verify(userRepository, never()).findByEmail(anyString()); //email check shouldn't happen
+        verify(passwordEncoder, never()).encode(anyString()); //password encoding should not happen
+        verify(userRepository, never()).save(any(User.class)); //no user should be saved
+
+    }
 }

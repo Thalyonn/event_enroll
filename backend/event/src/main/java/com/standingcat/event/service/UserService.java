@@ -49,7 +49,32 @@ public class UserService {
         return newUser;
     }
 
+    @Transactional
     public User createAdminUser(User user){
-        return null;
+        //check if username and email is in repository already
+        if(userRepository.findByUsername(user.getUsername()).isPresent()){
+            throw new UsernameAlreadyTakenException("Username is already taken!");
+        }
+        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+            throw new EmailAlreadyRegisteredException("Email is already taken.");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        /* User savedUser = new User(
+                1L, //fake id, any long
+                newUser.getUsername(),
+                encodedPassword,
+                newUser.getEmail(),
+                Set.of("ROLE_USER"),
+                null,
+                null
+        ); */
+
+        Set<String> roles = new HashSet<>();
+        roles.add("ROLE_USER");
+        roles.add("ROLE_ADMIN");
+        User newUser = userRepository.save(user);
+
+        return newUser;
     }
 }
