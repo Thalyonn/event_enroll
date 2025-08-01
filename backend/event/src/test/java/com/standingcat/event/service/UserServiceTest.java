@@ -192,6 +192,7 @@ class UserServiceTest {
 
     }
 
+    @Test
     void admin_register_email_taken() {
         //if username is taken, user should not be registered
         when(userRepository.findByEmail(newUser.getEmail())).thenReturn(Optional.of(new User()));
