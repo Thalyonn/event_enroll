@@ -96,10 +96,42 @@ class UserServiceTest {
     @Test
     void register_user_username_taken() {
         //if username is taken, user should not be registered
+        when(userRepository.findByUsername(newUser.getUsername())).thenReturn(Optional.of(new User()));
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.registerNewUser(newUser),
+                "Should throw IllegalArgumentException when username is taken"
+        );
+        //assert the exception message contains the expected text
+        assertTrue(thrown.getMessage().contains("Username '" + newUser.getUsername() + "' is already taken."),
+                "Exception message should indicate username is already taken");
+
+        //verify that findByUsername was called, but other methods weren't called
+        verify(userRepository, times(1)).findByUsername(newUser.getUsername());
+        verify(userRepository, never()).findByEmail(anyString()); //email check shouldn't happen
+        verify(passwordEncoder, never()).encode(anyString()); //password encoding should not happen
+        verify(userRepository, never()).save(any(User.class)); //no user should be saved
+
     }
 
     @Test
     void register_email_taken() {
+        //if username is taken, user should not be registered
+        when(userRepository.findByEmail(newUser.getUsername())).thenReturn(Optional.of(new User()));
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.registerNewUser(newUser),
+                "Should throw IllegalArgumentException when email is taken"
+        );
+        //assert the exception message contains the expected text
+        assertTrue(thrown.getMessage().contains("Email '" + newUser.getEmail() + "' is already taken."),
+                "Exception message should indicate email is already taken");
+
+        //verify that findByUsername was called, but other methods weren't called
+        verify(userRepository, times(1)).findByUsername(newUser.getUsername());
+        verify(userRepository, times(1)).findByEmail(newUser.getEmail());
+        verify(passwordEncoder, never()).encode(anyString()); //password encoding should not happen
+        verify(userRepository, never()).save(any(User.class)); //no user should be saved
 
     }
 
