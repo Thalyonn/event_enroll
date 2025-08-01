@@ -16,5 +16,5 @@ class EventServiceTest {
     @Mock
     private UserService userService;
     //unit test for services
-
+ /* */
 }

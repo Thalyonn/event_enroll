@@ -1,5 +1,7 @@
 package com.standingcat.event.service;
 
+import com.standingcat.event.exception.EmailAlreadyRegisteredException;
+import com.standingcat.event.exception.UsernameAlreadyTakenException;
 import com.standingcat.event.model.User;
 import com.standingcat.event.repository.EventRepository;
 import com.standingcat.event.repository.UserRepository;
@@ -49,9 +51,7 @@ class UserServiceTest {
                 null
         );
 
-        //mock the behavior of the passwordEncoder.encode method.
-        //when encode is called with 'rawPassword', it should return 'encodedPassword'.
-        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+
     }
     @Test
     void register_user_username_and_email_not_taken() {
@@ -73,8 +73,14 @@ class UserServiceTest {
         //save any User.class as object passed to the service may change by the service
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
+        //mock the behavior of the passwordEncoder.encode method.
+        //when encode is called with 'rawPassword', it should return 'encodedPassword'.
+        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+
         //call the actual method
         User registeredUser = userService.registerNewUser(newUser);
+
+
 
         //verify the calls in when were actually used and verify number of calls.
         verify(userRepository, times(1)).findByUsername(newUser.getUsername());
@@ -97,13 +103,13 @@ class UserServiceTest {
     void register_user_username_taken() {
         //if username is taken, user should not be registered
         when(userRepository.findByUsername(newUser.getUsername())).thenReturn(Optional.of(new User()));
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
+        UsernameAlreadyTakenException thrown = assertThrows(
+                UsernameAlreadyTakenException.class,
                 () -> userService.registerNewUser(newUser),
                 "Should throw IllegalArgumentException when username is taken"
         );
         //assert the exception message contains the expected text
-        assertTrue(thrown.getMessage().contains("Username '" + newUser.getUsername() + "' is already taken."),
+        assertTrue(thrown.getMessage().contains("Username is already taken!"),
                 "Exception message should indicate username is already taken");
 
         //verify that findByUsername was called, but other methods weren't called
@@ -118,13 +124,13 @@ class UserServiceTest {
     void register_email_taken() {
         //if username is taken, user should not be registered
         when(userRepository.findByEmail(newUser.getEmail())).thenReturn(Optional.of(new User()));
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
+        EmailAlreadyRegisteredException thrown = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> userService.registerNewUser(newUser),
                 "Should throw IllegalArgumentException when email is taken"
         );
         //assert the exception message contains the expected text
-        assertTrue(thrown.getMessage().contains("Email '" + newUser.getEmail() + "' is already taken."),
+        assertTrue(thrown.getMessage().contains("Email is already taken."),
                 "Exception message should indicate email is already taken");
 
         //verify that findByUsername was called, but other methods weren't called
