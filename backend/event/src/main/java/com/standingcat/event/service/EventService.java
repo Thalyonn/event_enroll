@@ -55,4 +55,20 @@ public class EventService {
         event.setTitle(updatedEvent.getTitle());
         eventRepository.save(event);
     }
+
+    @Transactional
+    public Event hideEvent(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event not found."));
+        event.setHidden(true);
+        return eventRepository.save(event);
+    }
+
+    @Transactional
+    public Event unhideEvent(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event not found."));
+        event.setHidden(false);
+        return eventRepository.save(event);
+    }
 }
