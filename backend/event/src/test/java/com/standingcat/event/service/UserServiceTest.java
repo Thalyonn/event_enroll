@@ -8,6 +8,7 @@ import com.standingcat.event.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,6 +62,8 @@ class UserServiceTest {
         //mock username and email repository returning empty
         when(userRepository.findByUsername(newUser.getUsername())).thenReturn(Optional.empty());
         when(userRepository.findByEmail(newUser.getEmail())).thenReturn(Optional.empty());
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
 
         User savedUser = new User(
                 1L, //fake id, any long
@@ -74,6 +77,7 @@ class UserServiceTest {
         //save any User.class as object passed to the service may change by the service
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
+
         //mock the behavior of the passwordEncoder.encode method.
         //when encode is called with 'rawPassword', it should return 'encodedPassword'.
         when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
@@ -82,12 +86,17 @@ class UserServiceTest {
         User registeredUser = userService.registerNewUser(newUser);
 
 
-
         //verify the calls in when were actually used and verify number of calls.
         verify(userRepository, times(1)).findByUsername(newUser.getUsername());
         verify(userRepository, times(1)).findByEmail(newUser.getEmail());
         verify(passwordEncoder, times(1)).encode(rawPassword);
         verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository).save(userCaptor.capture());
+
+        User userBeforeSaving = userCaptor.getValue();
+
+        assertTrue(userBeforeSaving.getRoles().contains("ROLE_USER"), "Service should assign ROLE_USER before saving");
+        assertEquals(1, userBeforeSaving.getRoles().size(), "Only one role should be assigned");
 
         assertNotNull(registeredUser, "Registered user shouldn't be null");
         assertEquals(savedUser.getId(), registeredUser.getId(), "ID should be properly set by repository.");
@@ -153,6 +162,8 @@ class UserServiceTest {
         when(userRepository.findByUsername(newAdmin.getUsername())).thenReturn(Optional.empty());
         when(userRepository.findByEmail(newAdmin.getEmail())).thenReturn(Optional.empty());
 
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
         User savedUser = new User(
                 1L, //fake id, any long
                 newUser.getUsername(),
@@ -179,6 +190,11 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByEmail(newUser.getEmail());
         verify(passwordEncoder, times(1)).encode(rawPassword);
         verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository).save(userCaptor.capture());
+
+        User userBeforeSaving = userCaptor.getValue();
+        assertTrue(userBeforeSaving.getRoles().contains("ROLE_USER"), "Service should assign ROLE_USER before saving");
+        assertTrue(userBeforeSaving.getRoles().contains("ROLE_ADMIN"), "Service should assign ROLE_USER before saving");
 
         assertNotNull(registeredUser, "Registered user shouldn't be null");
         assertEquals(savedUser.getId(), registeredUser.getId(), "ID should be properly set by repository.");

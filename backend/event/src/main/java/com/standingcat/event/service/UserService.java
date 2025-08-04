@@ -44,6 +44,7 @@ public class UserService {
 
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
+        user.setRoles(roles);
         User newUser = userRepository.save(user);
 
         return newUser;
@@ -73,6 +74,7 @@ public class UserService {
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
         roles.add("ROLE_ADMIN");
+        user.setRoles(roles);
         User newUser = userRepository.save(user);
 
         return newUser;
