@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -32,15 +33,6 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        /* User savedUser = new User(
-                1L, //fake id, any long
-                newUser.getUsername(),
-                encodedPassword,
-                newUser.getEmail(),
-                Set.of("ROLE_USER"),
-                null,
-                null
-        ); */
 
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
@@ -61,15 +53,6 @@ public class UserService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        /* User savedUser = new User(
-                1L, //fake id, any long
-                newUser.getUsername(),
-                encodedPassword,
-                newUser.getEmail(),
-                Set.of("ROLE_USER"),
-                null,
-                null
-        ); */
 
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
@@ -78,5 +61,9 @@ public class UserService {
         User newUser = userRepository.save(user);
 
         return newUser;
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 }
