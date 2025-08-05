@@ -53,7 +53,7 @@ public class EventService {
         event.setDescription(updatedEvent.getDescription());
         event.setImageUrl(updatedEvent.getImageUrl());
         event.setTitle(updatedEvent.getTitle());
-        eventRepository.save(event);
+        return eventRepository.save(event);
     }
 
     @Transactional
@@ -65,7 +65,7 @@ public class EventService {
     }
 
     @Transactional
-    public Event unhideEvent(Long eventId) {
+    public Event unHideEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("Event not found."));
         event.setHidden(false);
