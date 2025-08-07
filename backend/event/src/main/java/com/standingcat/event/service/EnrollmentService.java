@@ -60,7 +60,7 @@ public class EnrollmentService {
         enrollmentRepository.delete(enrollment);
     }
 
-    public List<Enrollment> getEnrollmentsForEvent(Long eventId) { 
+    public List<Enrollment> getEnrollmentsForEvent(Long eventId) {
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found."));
         return enrollmentRepository.findByEvent(event);
