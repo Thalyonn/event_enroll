@@ -50,7 +50,7 @@ public class EnrollmentService {
     }
 
     @Transactional
-    public void unEnrollUserToEvent(Long userId, Long eventId) {
+    public void unEnrollUserFromEvent(Long userId, Long eventId) {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not Found"));
         Event event = eventService.getEventById(eventId)
