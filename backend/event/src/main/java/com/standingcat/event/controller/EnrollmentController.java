@@ -70,7 +70,7 @@ public class EnrollmentController {
     }
 
     //users can un-enroll themselves
-    @DeleteMapping("/{eventId}") 
+    @DeleteMapping("/{eventId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> unEnrollUserFromEvent(@PathVariable Long eventId, @AuthenticationPrincipal UserDetails userDetails) {
         Optional<User> currentUser = userService.findByUsername(userDetails.getUsername());
