@@ -52,6 +52,7 @@ public class EventService {
         event.setEventTime(updatedEvent.getEventTime());
         event.setDescription(updatedEvent.getDescription());
         event.setImageUrl(updatedEvent.getImageUrl());
+        event.setCapacity(updatedEvent.getCapacity());
         event.setTitle(updatedEvent.getTitle());
         return eventRepository.save(event);
     }

@@ -39,5 +39,7 @@ public class Event
     private Set<Enrollment> enrollments;
     private boolean isHidden = false;
 
+    private Integer capacity;
+
 
 }

@@ -1,8 +1,6 @@
 package com.standingcat.event.service;
 
-import com.standingcat.event.exception.EnrollmentNotFoundException;
-import com.standingcat.event.exception.EventNotFoundException;
-import com.standingcat.event.exception.UserNotFoundException;
+import com.standingcat.event.exception.*;
 import com.standingcat.event.model.Enrollment;
 import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
@@ -34,6 +32,15 @@ public class EnrollmentService {
                 .orElseThrow(() -> new UserNotFoundException("User not Found"));
         Event event = eventService.getEventById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("Event not Found"));
+
+        //null means unlimited capacity
+        if(event.getCapacity() != null && event.getEnrollments().size() >= event.getCapacity()) {
+            throw new InsufficientCapacityException("Event is at full capacity.");
+        }
+
+        if(enrollmentRepository.findByUserAndEvent(user, event).isPresent()) {
+            throw new UserAlreadyEnrolledException("User already enrolled.");
+        }
 
         Enrollment enrollment = new Enrollment();
         enrollment.setUser(user);
