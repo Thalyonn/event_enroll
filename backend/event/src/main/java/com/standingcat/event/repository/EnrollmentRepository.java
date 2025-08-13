@@ -15,4 +15,5 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByEvent(Event event); //admin can see all users enrolled to event
     Optional<Enrollment> findByUserAndEvent(User user, Event event); //check if already enrolled
 
+    boolean existsByUserAndEvent(User user, Event event);
 }
