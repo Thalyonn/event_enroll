@@ -31,15 +31,16 @@ public class Event
     @Column(nullable = false)
     private LocalDateTime eventTime;
 
+
+    private boolean isHidden = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Enrollment> enrollments;
-    private boolean isHidden = false;
-
     private Integer capacity;
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Enrollment> enrollments;
 
 }
