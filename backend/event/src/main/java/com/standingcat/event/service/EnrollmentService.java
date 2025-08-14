@@ -29,9 +29,9 @@ public class EnrollmentService {
     @Transactional
     public Enrollment enrollUserToEvent(Long userId, Long eventId) {
         User user = userService.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not Found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
         Event event = eventService.getEventById(eventId)
-                .orElseThrow(() -> new EventNotFoundException("Event not Found"));
+                .orElseThrow(() -> new EventNotFoundException("Event not found."));
 
         //null means unlimited capacity
         if(event.getCapacity() != null && event.getEnrollments().size() >= event.getCapacity()) {
@@ -59,11 +59,11 @@ public class EnrollmentService {
     @Transactional
     public void unEnrollUserFromEvent(Long userId, Long eventId) {
         User user = userService.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not Found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
         Event event = eventService.getEventById(eventId)
-                .orElseThrow(() -> new EventNotFoundException("Event not Found"));
+                .orElseThrow(() -> new EventNotFoundException("Event not found."));
         Enrollment enrollment = enrollmentRepository.findByUserAndEvent(user, event)
-                .orElseThrow(() -> new EnrollmentNotFoundException("Enrollment not Found"));
+                .orElseThrow(() -> new EnrollmentNotFoundException("Enrollment not found."));
         enrollmentRepository.delete(enrollment);
     }
 
