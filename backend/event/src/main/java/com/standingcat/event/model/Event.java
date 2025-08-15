@@ -1,6 +1,7 @@
 package com.standingcat.event.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class Event
 
     private boolean isHidden = false;
 
+    @JsonIgnoreProperties({"email", "roles", "enrollments"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;

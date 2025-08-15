@@ -1,5 +1,6 @@
 package com.standingcat.event.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,10 +22,12 @@ public class Enrollment {
     @Column(nullable = false)
     private LocalDateTime enrollmentTime;
 
+    @JsonIgnoreProperties({"email", "roles", "enrollments"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @JsonIgnoreProperties({"owner", "enrollments"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;

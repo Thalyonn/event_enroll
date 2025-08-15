@@ -25,11 +25,13 @@ public class User {
     private String password;
 
     @Column(unique = true, nullable = false)
+    @JsonIgnore
     private String email;
 
     @ElementCollection(fetch = FetchType.EAGER) //fetch roles eagerly
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id")) //make a new table for this set
     @Column(name = "role")
+    @JsonIgnore
     private Set<String> roles = new HashSet<>(); // e.g., "ROLE_USER", "ROLE_ADMIN"
 
     //for now, event creation is intended for admins
