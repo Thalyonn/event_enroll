@@ -94,7 +94,6 @@ class EventApplicationTests {
 	@Test
 	@WithMockUser(username = "testuser", roles = {"USER"})
 	void enrollUser_userAlreadyEnrolled() throws Exception {
-		// Arrange — manually insert enrollment so user is already enrolled
 		Enrollment enrollment = new Enrollment();
 		enrollment.setUser(testUser);
 		enrollment.setEvent(testEvent);
@@ -103,11 +102,51 @@ class EventApplicationTests {
 
 		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
 
-		// Act + Assert — trying to enroll again should fail
 		mockMvc.perform(post("/api/enrollments/{eventId}", testEvent.getId()))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error").value("User already enrolled."));
 	}
+
+	//enroll while event is at full capacity
+	@Test
+	void enrollUser_eventFull() throws Exception {
+		// Arrange — create event with capacity 2
+		Event fullEvent = eventRepository.save(new Event(
+				null, "Full Event", "Description", "image.jpg",
+				LocalDateTime.now(), false, testUser, 2, new HashSet<>()
+		));
+
+		// Create users in the DB
+		User firstUser = userRepository.save(new User(
+				null, "firstuser", "password", "first@example.com",
+				Set.of("ROLE_USER"), null, null
+		));
+		User secondUser = userRepository.save(new User(
+				null, "seconduser", "password", "second@example.com",
+				Set.of("ROLE_USER"), null, null
+		));
+		User thirdUser = userRepository.save(new User(
+				null, "thirduser", "password", "third@example.com",
+				Set.of("ROLE_USER"), null, null
+		));
+
+		// Enroll first user
+		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
+						.with(user(firstUser.getUsername()).roles("USER")))
+				.andExpect(status().isCreated());
+
+		// Enroll second user
+		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
+						.with(user(secondUser.getUsername()).roles("USER")))
+				.andExpect(status().isCreated());
+
+		// Attempt to enroll third user — should fail because capacity is full
+		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
+						.with(user(thirdUser.getUsername()).roles("USER")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error").value("Event is at full capacity."));
+	}
+
 
 	//event doesn't exist
 	@Test
@@ -129,5 +168,110 @@ class EventApplicationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").isArray());
 	}
+
+	//event does not exist
+	@Test
+	@WithMockUser(username = "admin", roles = "ADMIN")
+	void getEnrollmentsForEvent_eventNotFound() throws Exception {
+		Long ghostEventId = testEvent.getId() + 9999;
+		assertFalse(eventRepository.existsById(ghostEventId));
+		mockMvc.perform(get("/api/enrollments/event/{eventId}", ghostEventId))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.error").value("Event not found."));
+
+	}
+
+	//non admin tries to get all enrollments
+	@Test
+	@WithMockUser(username = "testuser", roles = "USER")
+	void getEnrollmentsForEvent_notAdmin() throws Exception {
+		mockMvc.perform(get("/api/enrollments/event/{eventId}", testEvent.getId()))
+				.andExpect(status().isForbidden()); //403
+
+	}
+
+
+	//get my enrollments
+	@Test
+	@WithMockUser(username = "testuser", roles = "USER")
+	void getMyEnrollments_success() throws Exception {
+		Enrollment enrollment1 = new Enrollment();
+		enrollment1.setUser(testUser);
+		enrollment1.setEvent(testEvent);
+		enrollment1.setEnrollmentTime(LocalDateTime.now());
+		enrollmentRepository.save(enrollment1);
+
+		User otherUser = userRepository.save(new User(
+				null,
+				"otheruser",
+				"password",
+				"other@example.com",
+				Set.of("ROLE_USER"),
+				null,
+				null
+		));
+		Event otherEvent = eventRepository.save(new Event(
+				null,
+				"Other Event",
+				"Description",
+				"image.jpg",
+				LocalDateTime.now(),
+				false,
+				otherUser,
+				5,
+				new HashSet<>()
+		));
+		Enrollment enrollment2 = new Enrollment();
+		enrollment2.setUser(otherUser);
+		enrollment2.setEvent(otherEvent);
+		enrollment2.setEnrollmentTime(LocalDateTime.now());
+		enrollmentRepository.save(enrollment2);
+
+		Event anotherEvent = eventRepository.save(new Event(
+				null,
+				"Another Event",
+				"Description",
+				"image.jpg",
+				LocalDateTime.now(),
+				false,
+				testUser,
+				5,
+				new HashSet<>()
+		));
+		Enrollment enrollment3 = new Enrollment();
+		enrollment3.setUser(testUser);
+		enrollment3.setEvent(anotherEvent);
+		enrollment3.setEnrollmentTime(LocalDateTime.now());
+		enrollmentRepository.save(enrollment3);
+
+		mockMvc.perform(get("/api/enrollments/my-enrollments"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$.length()").value(2)) // should return only the 2 testUser enrollments
+				.andExpect(jsonPath("$[0].user.username").value("testuser"))
+				.andExpect(jsonPath("$[1].user.username").value("testuser"));
+	}
+
+	//user is authenticated but not in the database while trying to get enrollments
+	@Test
+	@WithMockUser(username = "fakeuser", roles = {"USER"})
+	void getMyEnrollments_userNotFound() throws	Exception {
+		mockMvc.perform(get("/api/enrollments/my-enrollments"))
+				.andExpect(status().isUnauthorized()) // 401
+				.andExpect(jsonPath("$.error").value("Authenticated user not found."));
+	}
+
+	//no enrollments
+	@Test
+	@WithMockUser(username = "testuser", roles = {"USER"})
+	void getMyEnrollments_noEnrollments() throws Exception {
+		mockMvc.perform(get("/api/enrollments/my-enrollments"))
+				.andExpect(status().isOk()) // Expect a 200 OK status
+				.andExpect(jsonPath("$").isArray()) // Verify the root element is a JSON array
+				.andExpect(jsonPath("$").isEmpty());
+	}
+
+	//un-enroll user from event
+
 
 }

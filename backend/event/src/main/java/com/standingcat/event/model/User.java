@@ -1,9 +1,8 @@
 package com.standingcat.event.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,13 +34,19 @@ public class User {
     //for now, event creation is intended for admins
     //cascade type set to all, when a user is deleted so should all the created events
     //orphanRemoval set to true to automatically remove from the database an event deleted from the user
+    @JsonIgnore // <— prevent Event -> owner -> createdEvents -> owner -> …
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Event> createdEvents;
 
     //might be confusing but conceptually, a User can enroll in many Events (Many-to-Many with Event)
     //implementation-wise though, a User has many Enrollment records (One-to-Many with Enrollment)
     //user can have multiple enrollments but an enrollment can only have one user
+    @JsonIgnore // <— prevent Enrollment -> user -> enrollments -> event -> …
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Enrollment> enrollments;
 
 }

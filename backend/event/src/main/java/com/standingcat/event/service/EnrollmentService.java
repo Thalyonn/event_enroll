@@ -47,6 +47,8 @@ public class EnrollmentService {
         enrollment.setEvent(event);
         enrollment.setEnrollmentTime(LocalDateTime.now());
 
+        event.getEnrollments().add(enrollment);
+
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
         emailService.sendEnrollmentConfirmation(user.getEmail(), event.getTitle());
