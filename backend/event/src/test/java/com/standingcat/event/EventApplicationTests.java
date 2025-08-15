@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -145,6 +146,17 @@ class EventApplicationTests {
 						.with(user(thirdUser.getUsername()).roles("USER")))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error").value("Event is at full capacity."));
+	}
+
+	@Test
+	@WithMockUser(username = "testuser", roles = "USER")
+	void enrollUserShouldNotReturnPasswordField() throws Exception {
+		mockMvc.perform(post("/api/enrollments/{eventId}", testEvent.getId())
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				// Ensure "password" is not included anywhere in the JSON
+				.andExpect(jsonPath("$.user.password").doesNotExist())
+				.andExpect(jsonPath("$.event.owner.password").doesNotExist());
 	}
 
 
