@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
     @Mock // Creates a mock instance of EventRepository
     private UserRepository userRepository;
 

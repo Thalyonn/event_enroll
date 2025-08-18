@@ -48,7 +48,7 @@ public class EnrollmentService {
         enrollment.setEnrollmentTime(LocalDateTime.now());
 
         event.getEnrollments().add(enrollment);
-
+        user.getEnrollments().add(enrollment);
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
         emailService.sendEnrollmentConfirmation(user.getEmail(), event.getTitle());
@@ -66,6 +66,8 @@ public class EnrollmentService {
                 .orElseThrow(() -> new EventNotFoundException("Event not found."));
         Enrollment enrollment = enrollmentRepository.findByUserAndEvent(user, event)
                 .orElseThrow(() -> new EnrollmentNotFoundException("Enrollment not found."));
+        //enrollment.getEvent().getEnrollments().remove(enrollment);
+        //enrollment.getUser().getEnrollments().remove(enrollment);
         enrollmentRepository.delete(enrollment);
     }
 

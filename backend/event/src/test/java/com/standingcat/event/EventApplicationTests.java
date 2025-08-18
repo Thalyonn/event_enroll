@@ -6,6 +6,7 @@ import com.standingcat.event.model.User;
 import com.standingcat.event.repository.EnrollmentRepository;
 import com.standingcat.event.repository.EventRepository;
 import com.standingcat.event.repository.UserRepository;
+import jakarta.persistence.CascadeType;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,7 +58,7 @@ class EventApplicationTests {
 				"test@example.com",
 				Set.of("ROLE_USER"),
 				null,
-				null));
+				new HashSet<>()));
 		testEvent = eventRepository.save(new Event(
 				null,
 				"Test Event",
@@ -120,15 +121,15 @@ class EventApplicationTests {
 		// Create users in the DB
 		User firstUser = userRepository.save(new User(
 				null, "firstuser", "password", "first@example.com",
-				Set.of("ROLE_USER"), null, null
+				Set.of("ROLE_USER"), null, new HashSet<>()
 		));
 		User secondUser = userRepository.save(new User(
 				null, "seconduser", "password", "second@example.com",
-				Set.of("ROLE_USER"), null, null
+				Set.of("ROLE_USER"), null, new HashSet<>()
 		));
 		User thirdUser = userRepository.save(new User(
 				null, "thirduser", "password", "third@example.com",
-				Set.of("ROLE_USER"), null, null
+				Set.of("ROLE_USER"), null, new HashSet<>()
 		));
 
 		// Enroll first user
@@ -284,6 +285,27 @@ class EventApplicationTests {
 	}
 
 	//un-enroll user from event
+	@Test
+	@WithMockUser(username = "testuser", roles = {"USER"})
+	void unEnroll_success() throws Exception {
+		mockMvc.perform(post("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.user.username").value("testuser"));
+
+		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+		Optional<Enrollment> enrollment = enrollmentRepository.findByUserAndEvent(testUser, testEvent);
+		System.out.println("enrollment: " + enrollmentRepository.findByUserAndEvent(testUser, testEvent));
+		System.out.println("user: " + testUser);
+		System.out.println("user: " + testEvent);
+		mockMvc.perform(delete("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isNoContent());
+		Optional<Enrollment> enrollment2 = enrollmentRepository.findByUserAndEvent(testUser, testEvent);
+		System.out.println("enrollment2: " + enrollmentRepository.findByUserAndEvent(testUser, testEvent));
+		assertFalse(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+	}
+
+	//Fail — Authenticated user not found in DB → returns 401 Unauthorized.
+	//Fail — Not enrolled in event → returns 400 Bad Request with error message.
 
 
 }

@@ -47,9 +47,9 @@ public class User {
     //implementation-wise though, a User has many Enrollment records (One-to-Many with Enrollment)
     //user can have multiple enrollments but an enrollment can only have one user
     @JsonIgnore // <— prevent Enrollment -> user -> enrollments -> event -> …
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Set<Enrollment> enrollments;
+    private Set<Enrollment> enrollments = new HashSet<>();
 
 }

@@ -83,7 +83,7 @@ public class EnrollmentControllerTest {
 
         verify(enrollmentService, times(1)).enrollUserToEvent(eq(testUser.getId()), eq(testEvent.getId()));
     }
-
+    /*
     @Test
     @DisplayName("DELETE /api/enrollments/{eventId} should unenroll user successfully")
     @WithMockUser(username = "testuser", roles = "USER")
@@ -95,6 +95,6 @@ public class EnrollmentControllerTest {
 
         verify(enrollmentService, times(1)).unEnrollUserFromEvent(eq(testUser.getId()), eq(testEvent.getId()));
     }
-
+    */
 
 }
