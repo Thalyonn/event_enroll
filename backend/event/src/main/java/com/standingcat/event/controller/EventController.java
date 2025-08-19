@@ -66,7 +66,7 @@ public class EventController {
         }
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteEvent(@PathVariable Long id) {
         try {

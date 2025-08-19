@@ -10,4 +10,6 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByIsHiddenFalse(); //return all events where is hidden is false
     List<Event> findByOwnerId(Long ownerId); //find all events owned by a user
+
+    boolean existsByTitle(String title);
 }

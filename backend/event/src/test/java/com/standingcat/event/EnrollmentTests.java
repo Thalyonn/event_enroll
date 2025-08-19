@@ -6,7 +6,6 @@ import com.standingcat.event.model.User;
 import com.standingcat.event.repository.EnrollmentRepository;
 import com.standingcat.event.repository.EventRepository;
 import com.standingcat.event.repository.UserRepository;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class EventApplicationTests {
+class EnrollmentTests {
 
 	@Autowired
 	private MockMvc mockMvc;

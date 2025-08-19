@@ -41,7 +41,7 @@ public class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Set<Event> createdEvents;
+    private Set<Event> createdEvents = new HashSet<>();
 
     //might be confusing but conceptually, a User can enroll in many Events (Many-to-Many with Event)
     //implementation-wise though, a User has many Enrollment records (One-to-Many with Enrollment)
