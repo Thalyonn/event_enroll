@@ -66,8 +66,8 @@ public class EnrollmentService {
                 .orElseThrow(() -> new EventNotFoundException("Event not found."));
         Enrollment enrollment = enrollmentRepository.findByUserAndEvent(user, event)
                 .orElseThrow(() -> new EnrollmentNotFoundException("Enrollment not found."));
-        //enrollment.getEvent().getEnrollments().remove(enrollment);
-        //enrollment.getUser().getEnrollments().remove(enrollment);
+        user.getEnrollments().remove(enrollment);
+        event.getEnrollments().remove(enrollment);
         enrollmentRepository.delete(enrollment);
     }
 

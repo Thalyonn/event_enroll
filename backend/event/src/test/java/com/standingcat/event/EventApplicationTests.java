@@ -7,6 +7,7 @@ import com.standingcat.event.repository.EnrollmentRepository;
 import com.standingcat.event.repository.EventRepository;
 import com.standingcat.event.repository.UserRepository;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class EventApplicationTests {
 	@Autowired
 	private EnrollmentRepository enrollmentRepository;
 
+	@Autowired
+	private EntityManager entityManager;
+
 	private User testUser;
 	private Event testEvent;
 
@@ -79,6 +83,33 @@ class EventApplicationTests {
 				.andExpect(jsonPath("$.user.username").value("testuser"));
 
 		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+	}
+
+	//Created to see if enrollments are added to both user and event too
+	@Test
+	@WithMockUser(username = "testuser", roles = {"USER"})
+	void enrollUser_successPersistence() throws Exception {
+		mockMvc.perform(post("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.user.username").value("testuser"));
+
+		//Check enrollment exists in repository
+		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+
+		//Reload entities to ensure persistence context is updated
+		User persistedUser = userRepository.findById(testUser.getId())
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		Event persistedEvent = eventRepository.findById(testEvent.getId())
+				.orElseThrow(() -> new RuntimeException("Event not found"));
+
+		assertEquals(1, persistedUser.getEnrollments().size());
+		assertEquals(1, persistedEvent.getEnrollments().size());
+
+		Enrollment enrollmentFromUser = persistedUser.getEnrollments().iterator().next();
+		Enrollment enrollmentFromEvent = persistedEvent.getEnrollments().iterator().next();
+
+		assertEquals(testUser.getId(), enrollmentFromUser.getUser().getId());
+		assertEquals(testEvent.getId(), enrollmentFromEvent.getEvent().getId());
 	}
 
 	@Test
@@ -293,19 +324,59 @@ class EventApplicationTests {
 				.andExpect(jsonPath("$.user.username").value("testuser"));
 
 		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
-		Optional<Enrollment> enrollment = enrollmentRepository.findByUserAndEvent(testUser, testEvent);
-		System.out.println("enrollment: " + enrollmentRepository.findByUserAndEvent(testUser, testEvent));
-		System.out.println("user: " + testUser);
-		System.out.println("user: " + testEvent);
 		mockMvc.perform(delete("/api/enrollments/{eventId}", testEvent.getId()))
 				.andExpect(status().isNoContent());
-		Optional<Enrollment> enrollment2 = enrollmentRepository.findByUserAndEvent(testUser, testEvent);
-		System.out.println("enrollment2: " + enrollmentRepository.findByUserAndEvent(testUser, testEvent));
+
 		assertFalse(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
 	}
 
-	//Fail — Authenticated user not found in DB → returns 401 Unauthorized.
-	//Fail — Not enrolled in event → returns 400 Bad Request with error message.
+	@Test
+	@WithMockUser(username = "testuser", roles = {"USER"})
+	void unEnroll_successPersistence() throws Exception {
+		mockMvc.perform(post("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isCreated());
 
+		assertTrue(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+
+		mockMvc.perform(delete("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isNoContent());
+
+		entityManager.flush();
+		entityManager.clear();
+
+		//Reload fresh entities from DB
+		User refreshedUser = userRepository.findById(testUser.getId())
+				.orElseThrow();
+		Event refreshedEvent = eventRepository.findById(testEvent.getId())
+				.orElseThrow();
+
+		assertTrue(refreshedUser.getEnrollments().isEmpty(),
+				"User should not have enrollments anymore");
+		assertTrue(refreshedEvent.getEnrollments().isEmpty(),
+				"Event should not have enrollments anymore");
+		assertFalse(enrollmentRepository.existsByUserAndEvent(testUser, testEvent),
+				"Enrollment row should be deleted");
+	}
+
+
+
+
+	//Fail — Authenticated user not found in DB - returns 401 Unauthorized.
+	@Test
+	@WithMockUser(username = "fakeuser", roles = {"USER"})
+	void unEnroll_userNotFound() throws	Exception {
+		mockMvc.perform(delete("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error").value("Authenticated user not found."));
+	}
+	//Fail — Not enrolled in event - returns 400 Bad Request with error message.
+	@Test
+	@WithMockUser(username = "testuser", roles = {"USER"})
+	void unEnroll_userNotEnrolled() throws	Exception {
+		assertFalse(enrollmentRepository.existsByUserAndEvent(testUser, testEvent));
+		mockMvc.perform(delete("/api/enrollments/{eventId}", testEvent.getId()))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error").value("Enrollment not found."));
+	}
 
 }
