@@ -418,6 +418,129 @@ class EventTests {
 
     }
 
+    @Test
+    @WithMockUser(username = "testadmin", roles = {"ADMIN"})
+    void deleteEvent_eventNotFound() throws Exception {
+        User testAdmin = userRepository.save(new User(
+                null,
+                "testadmin",
+                "password",
+                "admin@example.com",
+                Set.of("ROLE_ADMIN"),
+                new HashSet<>(),
+                new HashSet<>()
+        ));
+
+
+        mockMvc.perform(delete("/api/events/{id}", testEvent.getId()+9999))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Event not found."));
+
+
+
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"user"})
+    void deleteEvent_notAdmin() throws Exception {
+
+        mockMvc.perform(delete("/api/events/{id}", testEvent.getId()))
+                .andExpect(status().isForbidden());
+        assertTrue(eventRepository.findById(testEvent.getId()).isPresent());
+
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void hideEvent_success() throws Exception {
+        mockMvc.perform(patch("/api/events/{id}/hide", testEvent.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hidden").value(true));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Event updated = eventRepository.findById(testEvent.getId()).orElseThrow();
+        assertTrue(updated.isHidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void hideEvent_notFound() throws Exception {
+        mockMvc.perform(patch("/api/events/{id}/hide", 99999))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Event not found."));
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = {"USER"})
+    void hideEvent_forbidden() throws Exception {
+        mockMvc.perform(patch("/api/events/{id}/hide", testEvent.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "testAdmin", roles = {"ADMIN"})
+    void unHideEvent_success() throws Exception {
+        User testAdmin = userRepository.save(new User(
+                null,
+                "testadmin",
+                "password",
+                "admin@example.com",
+                Set.of("ROLE_ADMIN"),
+                new HashSet<>(),
+                new HashSet<>()
+        ));
+        Event hiddenEvent = eventRepository.save(new Event(
+                null,
+                "Test Event",
+                "Description",
+                "image.jpg",
+                LocalDateTime.now(),
+                true,
+                testAdmin,
+                5,
+                new HashSet<>()));
+
+        mockMvc.perform(patch("/api/events/{id}/unhide", hiddenEvent.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hidden").value(false));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Event updated = eventRepository.findById(hiddenEvent.getId()).orElseThrow();
+        assertFalse(updated.isHidden());
+    }
+
+    @Test
+    @WithMockUser(username = "testAdmin", roles = {"ADMIN"})
+    void unHideEvent_notFound() throws Exception {
+
+        mockMvc.perform(patch("/api/events/{id}/unhide", 99999))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Event not found."));
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = {"USER"})
+    void unHideEvent_forbidden() throws Exception {
+        Event hiddenEvent = eventRepository.save(new Event(
+                null,
+                "Test Event",
+                "Description",
+                "image.jpg",
+                LocalDateTime.now(),
+                true,
+                testUser,
+                5,
+                new HashSet<>()));
+
+        mockMvc.perform(patch("/api/events/{id}/unhide", testEvent.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+
 
 
 }
