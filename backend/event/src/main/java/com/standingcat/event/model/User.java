@@ -38,7 +38,7 @@ public class User {
     //cascade type set to all, when a user is deleted so should all the created events
     //orphanRemoval set to true to automatically remove from the database an event deleted from the user
     @JsonIgnore // <— prevent Event -> owner -> createdEvents -> owner -> …
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "owner", orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<Event> createdEvents = new HashSet<>();

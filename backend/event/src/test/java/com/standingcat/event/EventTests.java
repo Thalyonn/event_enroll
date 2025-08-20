@@ -12,11 +12,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -258,4 +265,159 @@ class EventTests {
                 "User should not have created any events");
 
     }
+
+    /*updateEvent (admin only)
+    Success - Updates event details > returns 200 OK.
+    Fail - Event not found > 404 Not Found.
+    Fail - Non-admin tries to update > 403 Forbidden.*/
+
+    @Test
+    @WithMockUser(username = "testadmin", roles = {"ADMIN"})
+    void updateEvent_success() throws Exception {
+/*
+        @PutMapping("/{id}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody Event event) {
+            try {
+                Event updatedEvent = eventService.updateEvent(event, id);
+                return ResponseEntity.ok(updatedEvent);
+            } catch(RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            }
+        }*/
+        String eventJson = """
+        {
+            "title": "Updated Event",
+            "description": "Updated Description",
+            "imageUrl": "updatedimage.jpg",
+            "eventTime": "2031-01-01T10:00:00",
+            "capacity": 51
+        }
+        """;
+        mockMvc.perform(put("/api/events/{id}", testEvent.getId())
+                .contentType("application/json")
+                .content(eventJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Event"))
+                .andExpect(jsonPath("$.description").value("Updated Description"))
+                .andExpect(jsonPath("$.imageUrl").value("updatedimage.jpg"))
+                .andExpect(jsonPath("$.capacity").value(51));
+
+        Event updatedEvent = eventRepository.findById(testEvent.getId()).orElseThrow();
+        assertEquals("Updated Event", updatedEvent.getTitle());
+        assertEquals("Updated Description", updatedEvent.getDescription());
+        assertEquals("updatedimage.jpg", updatedEvent.getImageUrl());
+        assertEquals(51, updatedEvent.getCapacity());
+        assertEquals(LocalDateTime.of(2031, 1, 1, 10, 0), updatedEvent.getEventTime());
+
+
+
+    }
+
+    @Test
+    @WithMockUser(username = "testadmin", roles = {"ADMIN"})
+    void updateEvent_notFound() throws Exception {
+        String eventJson = """
+        {
+            "title": "Updated Event",
+            "description": "Updated Description",
+            "imageUrl": "updatedimage.jpg",
+            "eventTime": "2031-01-01T10:00:00",
+            "capacity": 51
+        }
+        """;
+        mockMvc.perform(put("/api/events/{id}", testEvent.getId()+9999)
+                        .contentType("application/json")
+                        .content(eventJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Event not found."));
+
+    }
+
+    @Test
+    @WithMockUser(username = "testuser", roles = {"USER"})
+    void updateEvent_notAdmins() throws Exception {
+        String eventJson = """
+        {
+            "title": "Updated Event",
+            "description": "Updated Description",
+            "imageUrl": "updatedimage.jpg",
+            "eventTime": "2031-01-01T10:00:00",
+            "capacity": 51
+        }
+        """;
+        mockMvc.perform(put("/api/events/{id}", testEvent.getId())
+                        .contentType("application/json")
+                        .content(eventJson))
+                .andExpect(status().isForbidden());
+        Event updatedEvent = eventRepository.findById(testEvent.getId()).orElseThrow();
+        assertEquals(testEvent.getTitle(), updatedEvent.getTitle());
+        assertEquals(testEvent.getDescription(), updatedEvent.getDescription());
+        assertEquals(testEvent.getImageUrl(), updatedEvent.getImageUrl());
+        assertEquals(testEvent.getCapacity(), updatedEvent.getCapacity());
+        assertEquals(testEvent.getEventTime(), updatedEvent.getEventTime());
+
+    }
+    /*deleteEvent (admin only)
+    Success - Deletes event > returns 204 No Content.
+    Fail - Event not found > 404 Not Found.
+    Fail - Non-admin tries to delete > 403 Forbidden.*/
+    @Test
+    @WithMockUser(username = "testadmin", roles = {"ADMIN"})
+    void deleteEvent_success() throws Exception {
+        User testAdmin = userRepository.save(new User(
+                null,
+                "testadmin",
+                "password",
+                "admin@example.com",
+                Set.of("ROLE_ADMIN"),
+                new HashSet<>(),
+                new HashSet<>()
+        ));
+
+        String eventJson = """
+        {
+            "title": "Admin Event",
+            "description": "Created by admin",
+            "imageUrl": "image.jpg",
+            "eventTime": "2030-01-01T10:00:00",
+            "capacity": 50
+        }
+        """;
+
+        mockMvc.perform(post("/api/events")
+                        .contentType("application/json")
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Admin Event"))
+                .andExpect(jsonPath("$.owner.username").value("testadmin"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        User persistedAdmin = userRepository.findByUsername("testadmin").orElseThrow();
+        Event createdEvent = eventRepository.findAll()
+                .stream()
+                .filter(e -> e.getTitle().equals("Admin Event"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("testadmin", createdEvent.getOwner().getUsername());
+        assertTrue(persistedAdmin.getCreatedEvents().contains(createdEvent));
+
+        mockMvc.perform(delete("/api/events/{id}", createdEvent.getId()))
+                .andExpect(status().isNoContent());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        assertFalse(eventRepository.findById(createdEvent.getId()).isPresent());
+
+        User refreshedAdmin = userRepository.findByUsername("testadmin").orElseThrow();
+        assertFalse(refreshedAdmin.getCreatedEvents().contains(createdEvent));
+
+    }
+
+
+
 }
