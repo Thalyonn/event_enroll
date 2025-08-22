@@ -1,5 +1,6 @@
 package com.standingcat.event.config;
 
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import com.standingcat.event.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,19 +53,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) //disable CSRF for API (stateless)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/h2-console/**").permitAll() //allow H2 console for development
-                        .requestMatchers("/api/auth/register").permitAll() //allow public registration
-                        .requestMatchers("/api/events").permitAll() //allow anyone to view events list
-                        .requestMatchers("/api/events/{id}").permitAll() //allow anyone to view single event
-                        .anyRequest().authenticated() //all other API requests require authentication
+                .csrf(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/events/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .httpBasic(withDefaults()); //ase HTTP Basic authentication for simplicity
+                .formLogin(form -> form
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/", true)
+                        .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .permitAll()
+                );
 
-        //for H2 console to work with Spring Security
-        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // for H2 console
 
         return http.build();
     }
+
 }

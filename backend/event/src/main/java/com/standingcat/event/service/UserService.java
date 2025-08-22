@@ -35,7 +35,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         Set<String> roles = new HashSet<>();
-        roles.add("ROLE_USER");
+        roles.add("USER");
         user.setRoles(roles);
         User newUser = userRepository.save(user);
 
