@@ -1,5 +1,6 @@
 package com.standingcat.event.config;
 
+import com.standingcat.event.security.jwt.JwtAuthenticationFilter;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import com.standingcat.event.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity //@PreAuthorize and @PostAuthorize
 public class SecurityConfig {
+   
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
