@@ -6,6 +6,7 @@ import com.standingcat.event.model.User;
 import com.standingcat.event.repository.EnrollmentRepository;
 import com.standingcat.event.repository.EventRepository;
 import com.standingcat.event.repository.UserRepository;
+import com.standingcat.event.security.jwt.JwtAuthenticationFilter;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,11 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
-@ActiveProfiles("test")
 class EnrollmentTests {
-
+	@MockBean
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -170,17 +172,17 @@ class EnrollmentTests {
 
 		// Enroll first user
 		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
-						.with(user(firstUser.getUsername()).roles("USER")))
+						.with(user("firstuser").roles("USER")))
 				.andExpect(status().isCreated());
 
 		// Enroll second user
 		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
-						.with(user(secondUser.getUsername()).roles("USER")))
+						.with(user("seconduser").roles("USER")))
 				.andExpect(status().isCreated());
 
-		// Attempt to enroll third user — should fail because capacity is full
+		// Attempt third user (capacity exceeded)
 		mockMvc.perform(post("/api/enrollments/{eventId}", fullEvent.getId())
-						.with(user(thirdUser.getUsername()).roles("USER")))
+						.with(user("thirduser").roles("USER")))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error").value("Event is at full capacity."));
 	}
