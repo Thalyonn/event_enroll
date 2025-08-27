@@ -1,5 +1,6 @@
 package com.standingcat.event;
 
+import com.standingcat.event.config.TestSecurityConfig;
 import com.standingcat.event.model.Enrollment;
 import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -36,11 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc//(addFilters = false)
 @Transactional
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
 class EnrollmentTests {
-	@MockBean
-	private JwtAuthenticationFilter jwtAuthenticationFilter;
+	//@MockBean
+	//private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Autowired
 	private MockMvc mockMvc;
