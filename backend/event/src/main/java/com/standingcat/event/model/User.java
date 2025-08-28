@@ -21,11 +21,9 @@ public class User {
     private String username;
 
     @Column(nullable = false)
-    @JsonIgnore
     private String password;
 
     @Column(unique = true, nullable = false)
-    @JsonIgnore
     private String email;
 
     @ElementCollection(fetch = FetchType.EAGER) //fetch roles eagerly

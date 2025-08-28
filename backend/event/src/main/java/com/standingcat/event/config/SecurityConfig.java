@@ -1,6 +1,8 @@
 package com.standingcat.event.config;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.standingcat.event.security.jwt.JwtAuthenticationFilter;
+import com.standingcat.event.security.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,10 +30,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity //@PreAuthorize and @PostAuthorize
 @Profile("!test")
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
+    @Bean
+    public JwtAuthenticationFilter jwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,7 +47,10 @@ public class SecurityConfig {
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getUsername())
                     .password(user.getPassword())
-                    .roles(user.getRoles().toArray(new String[0]))
+                    .authorities(user.getRoles().stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList()
+                    )
                     .build(); //roles have to be converted from Set<String> to String[]
         };
     }
@@ -60,12 +64,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) //disable CSRF for API (stateless)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll() //allow H2 console for development
-                        .requestMatchers("/api/auth/register").permitAll() //allow public registration
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() //allow public registration
                         .requestMatchers("/api/events").permitAll() //allow anyone to view events list
                         .requestMatchers("/api/events/{id}").permitAll() //allow anyone to view single event
                         .anyRequest().authenticated() //all other API requests require authentication
