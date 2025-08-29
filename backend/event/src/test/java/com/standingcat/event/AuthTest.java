@@ -66,6 +66,60 @@ public class AuthTest {
                 .andExpect(jsonPath("$.password").doesNotExist()) // password hidden
                 .andExpect(jsonPath("$.email").value("new@example.com"));
     }
+
+    @Test
+    void registerUser_duplicateUsername() throws Exception {
+        userRepository.save(new User(
+                null,
+                "dupeuser",
+                passwordEncoder.encode("pass123"),
+                "dupe@example.com",
+                Set.of("ROLE_USER"),
+                new HashSet<>(),
+                new HashSet<>()
+        ));
+
+        String newUserJson = """
+            {
+              "username": "dupeuser",
+              "password": "anotherpass",
+              "email": "new@example.com"
+            }
+            """;
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newUserJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Username is already taken!"));
+    }
+
+    @Test
+    void registerUser_duplicateEmail() throws Exception {
+        userRepository.save(new User(
+                null,
+                "uniqueuser",
+                passwordEncoder.encode("pass123"),
+                "dupe@example.com",
+                Set.of("ROLE_USER"),
+                new HashSet<>(),
+                new HashSet<>()
+        ));
+
+        String newUserJson = """
+            {
+              "username": "newuser",
+              "password": "newpass123",
+              "email": "dupe@example.com"
+            }
+            """;
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newUserJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Email is already taken."));
+    }
     @Test
     void loginUser_success() throws Exception {
 
