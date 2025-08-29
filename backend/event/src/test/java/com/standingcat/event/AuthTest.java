@@ -93,6 +93,37 @@ public class AuthTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").exists());
     }
+    @Test
+    void loginUser_invalidPassword() throws Exception {
+        String newUserJson = """
+            {
+              "username": "badpassuser",
+              "password": "rightpass",
+              "email": "badpass@example.com"
+            }
+            """;
 
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newUserJson))
+                .andExpect(status().isCreated());
+
+        userRepository.flush();
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"badpassuser\", \"password\":\"wrongpass\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid username or password"));
+    }
+
+    @Test
+    void loginUser_nonExistentUser() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"ghost\", \"password\":\"nopass\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid username or password"));
+    }
 
 }
