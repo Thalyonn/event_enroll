@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureMockMvc
 @Transactional
 class EventTests {
-
+    
 
     @Autowired
     private MockMvc mockMvc;
