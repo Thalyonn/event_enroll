@@ -28,6 +28,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { MantineLogo } from '@mantinex/mantine-logo';
 import classes from './HeaderMenu.module.css';
+import { Link } from 'react-router-dom';
 
 const mockdata = [
   {
@@ -94,8 +95,13 @@ export function HeaderMenu() {
           
 
           <Group visibleFrom="sm">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <Link to="/login">
+                <Button variant="default">Log in</Button>
+            </Link>
+            <Link to="/register">
+                <Button>Sign up</Button>
+            </Link>
+            
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
