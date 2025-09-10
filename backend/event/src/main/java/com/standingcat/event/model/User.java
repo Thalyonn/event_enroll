@@ -14,6 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+    //likely better to add some time stamp
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //strategy is automatic
     private Long id;
