@@ -25,7 +25,7 @@ export function RegistrationTitle() {
         <TextInput label="Email" placeholder="you@mantine.dev" required radius="md" />
         <TextInput label="Username" placeholder="username" required radius="md" mt="md" />
         <PasswordInput label="Password" placeholder="Your password" required mt="md" radius="md" />
-        
+        <PasswordInput label="Confirm Password" placeholder="Your password" required mt="md" radius="md" />
         <Button fullWidth mt="xl" radius="md">
           Register
         </Button>
