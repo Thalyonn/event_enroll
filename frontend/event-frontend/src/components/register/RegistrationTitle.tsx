@@ -29,6 +29,34 @@ export function RegistrationTitle() {
       confirmPassword: (value, values) => value !== values.password ? "Passwords do not match" : null,
     }
   });
+
+  const handleSubmit = async (values: typeof form.values) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: values.email,
+          username: values.username,
+          password: values.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Registered:", data);
+        //alert("Registration successful!");
+        form.reset();
+      } else {
+        const err = await response.json();
+        console.log(err);
+        //alert(err.error || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Error registering:", error);
+      //alert("Something went wrong.");
+    }
+  };
   
 
 
@@ -41,7 +69,7 @@ export function RegistrationTitle() {
       
       
       <Paper withBorder shadow="sm" p={22} mt={30} radius="md">
-        <form onSubmit={form.onSubmit(console.log)}>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput label="Email" placeholder="you@mantine.dev" required radius="md" {...form.getInputProps("email")}/>
           <TextInput label="Username" placeholder="username" required radius="md" mt="md" {...form.getInputProps("username")}/>
           <PasswordInput label="Password" placeholder="Your password" required mt="md" radius="md" {...form.getInputProps("password")}/>
