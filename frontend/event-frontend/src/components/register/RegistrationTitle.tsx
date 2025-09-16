@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import classes from './RegistrationTitle.module.css';
 import { useForm } from '@mantine/form';
+import { useNavigate } from "react-router-dom";
 
 export function RegistrationTitle() {
   const form = useForm({
@@ -30,6 +31,8 @@ export function RegistrationTitle() {
     }
   });
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (values: typeof form.values) => {
     try {
       const response = await fetch("http://localhost:8080/api/auth/register", {
@@ -47,6 +50,7 @@ export function RegistrationTitle() {
         console.log("Registered:", data);
         //alert("Registration successful!");
         form.reset();
+        navigate("/");
       } else {
         const err = await response.json();
         console.log(err);
