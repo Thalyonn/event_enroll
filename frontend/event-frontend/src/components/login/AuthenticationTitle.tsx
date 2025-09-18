@@ -41,7 +41,7 @@ export function AuthenticationTitle() {
         console.log("Login success:", data);
 
         //jwt
-        localStorage.setItem("token", data.token);
+        //localStorage.setItem("token", data.token);
 
         navigate("/");
       } else {

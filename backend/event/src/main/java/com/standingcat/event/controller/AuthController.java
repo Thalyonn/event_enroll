@@ -3,8 +3,10 @@ package com.standingcat.event.controller;
 import com.standingcat.event.model.User;
 import com.standingcat.event.security.jwt.JwtUtil;
 import com.standingcat.event.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest, HttpServletResponse response) {
         String username = loginRequest.get("username");
         String password = loginRequest.get("password");
 
@@ -59,11 +61,36 @@ public class AuthController {
             // generate token
             String jwt = jwtUtil.generateToken(userDetails);
 
-            return ResponseEntity.ok(Map.of("token", jwt));
+            ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                    .httpOnly(true)
+                    .secure(false)              //set true later for HTTPS only
+                    .sameSite("Strict")
+                    .path("/")                  //cookie valid for whole app
+                    .maxAge(60 * 60)            //1 hour expiry check optimal
+                    .build();
+
+            response.addHeader("Set-Cookie", cookie.toString());
+
+            return ResponseEntity.ok(Map.of("message", "successful login"));
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid username or password"));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(false)  //turn true later on
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)      //expires immediately
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 }
