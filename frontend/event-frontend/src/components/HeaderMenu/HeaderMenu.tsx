@@ -28,7 +28,8 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { MantineLogo } from '@mantinex/mantine-logo';
 import classes from './HeaderMenu.module.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
 
 const mockdata = [
   {
@@ -67,6 +68,39 @@ export function HeaderMenu() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const theme = useMantineTheme();
+  const navigate = useNavigate();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      console.log("Checking auth");
+      try {
+        const res = await fetch("http://localhost:8080/api/auth/me", {
+          credentials: "include", //send cookie
+        });
+        console.log("set auth true");
+        setIsAuthenticated(res.ok); // if ok then logged in
+      } catch {
+        console.log("set auth false");
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  },[]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
+        credentials: "include", 
+      });
+      setIsAuthenticated(false);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   const links = mockdata.map((item) => (
     <UnstyledButton className={classes.subLink} key={item.title}>
@@ -86,6 +120,7 @@ export function HeaderMenu() {
     </UnstyledButton>
   ));
 
+  console.log("HeaderMenu rendered");
   return (
     <Box pb={120}>
       <header className={classes.header}>
@@ -95,12 +130,27 @@ export function HeaderMenu() {
           
 
           <Group visibleFrom="sm">
-            <Link to="/login">
-                <Button variant="default">Log in</Button>
-            </Link>
-            <Link to="/register">
-                <Button>Sign up</Button>
-            </Link>
+            {
+              !isAuthenticated ? (
+              <>
+                <Link to="/login">
+                  <Button variant="default">Log in</Button>
+                </Link>
+                <Link to="/register">
+                  <Button>Sign up</Button>
+                </Link>
+              </>
+                
+
+              ) : (
+                
+                <Button variant='default' onClick={handleLogout}>
+                  Logout
+                </Button>
+                
+              )
+            }
+            
             
           </Group>
 
@@ -142,8 +192,16 @@ export function HeaderMenu() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            {!isAuthenticated ? (
+              <>
+                <Button variant="default">Log in</Button>
+                <Button>Sign up</Button>
+              </>
+            ) : (
+              <Button variant="default" onClick={handleLogout}>
+                Logout
+              </Button>
+            )}
           </Group>
         </ScrollArea>
       </Drawer>

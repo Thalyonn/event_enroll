@@ -1,4 +1,5 @@
 package com.standingcat.event.config;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.standingcat.event.security.jwt.JwtAuthenticationFilter;
@@ -30,6 +31,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity //@PreAuthorize and @PostAuthorize
 @Profile("!test")
 public class SecurityConfig {
+    @Bean
+    public DebugRequestLoggingFilter debugRequestLoggingFilter() {
+        return new DebugRequestLoggingFilter();
+    }
+
     @Bean
     public JwtAuthenticationFilter jwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
@@ -67,11 +73,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) //disable CSRF for API (stateless)
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll() //allow H2 console for development
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() //allow public registration
                         .requestMatchers("/api/events").permitAll() //allow anyone to view events list
                         .requestMatchers("/api/events/{id}").permitAll() //allow anyone to view single event
+                        .requestMatchers("/api/auth/me").authenticated()
                         .anyRequest().authenticated() //all other API requests require authentication
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
