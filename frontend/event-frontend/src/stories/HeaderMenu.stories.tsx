@@ -1,14 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { HeaderMenu } from '../components/HeaderMenu/HeaderMenu';
 import { withMantineContext } from '../decorators/withMantineContext';
+import { MemoryRouter } from 'react-router-dom';
 
 const meta: Meta<typeof HeaderMenu> = {
   title: 'HeaderMenu',
   component: HeaderMenu,
-  // Add the decorator to wrap the component with MantineProvider
-  decorators: [withMantineContext],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+    withMantineContext,
+  ],
   parameters: {
-    layout: 'fullscreen', // Use fullscreen layout to show the header at the top
+    layout: 'fullscreen',
   },
   tags: ['autodocs'],
 };
@@ -17,6 +24,32 @@ export default meta;
 
 type Story = StoryObj<typeof HeaderMenu>;
 
-export const Default: Story = {
-  args: {},
+function mockFetch(response: any, ok = true) {
+  global.fetch = async () =>
+    new Response(JSON.stringify(response), { status: ok ? 200 : 401 });
+}
+
+export const NotAuthenticated: Story = {
+  render: () => {
+    mockFetch({}, false); // simulate 401
+    return <HeaderMenu />;
+  },
+};
+
+export const AuthenticatedUser: Story = {
+  render: () => {
+    mockFetch({
+      roles: [{ authority: 'ROLE_USER' }],
+    });
+    return <HeaderMenu />;
+  },
+};
+
+export const AuthenticatedAdmin: Story = {
+  render: () => {
+    mockFetch({
+      roles: [{ authority: 'ROLE_ADMIN' }],
+    });
+    return <HeaderMenu />;
+  },
 };
