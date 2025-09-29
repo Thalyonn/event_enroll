@@ -71,6 +71,7 @@ export function HeaderMenu() {
   const navigate = useNavigate();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -79,8 +80,21 @@ export function HeaderMenu() {
         const res = await fetch("http://localhost:8080/api/auth/me", {
           credentials: "include", //send cookie
         });
-        console.log("set auth true");
-        setIsAuthenticated(res.ok); // if ok then logged in
+        if(res.ok) {
+          const data = await res.json();
+          console.log("set auth true");
+          setIsAuthenticated(true); // if ok then logged in
+          
+          setIsAdmin(
+            data.roles.some((role: any) => role.authority === "ROLE_ADMIN")
+          );
+        }
+        else {
+          setIsAuthenticated(false);
+          setIsAdmin(false);
+        }
+        
+        
       } catch {
         console.log("set auth false");
         setIsAuthenticated(false);
@@ -143,10 +157,20 @@ export function HeaderMenu() {
                 
 
               ) : (
+                <>
+                  {isAdmin && (
+                    <Button>
+                      Create
+                    </Button>
+                  )}
                 
-                <Button variant='default' onClick={handleLogout}>
-                  Logout
-                </Button>
+                
+                
+                  <Button variant='default' onClick={handleLogout}>
+                    Logout
+                  </Button>
+
+                </>
                 
               )
             }

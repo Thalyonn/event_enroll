@@ -46,7 +46,7 @@ export function CreateEvent() {
 
       <TextInput
         label="Capacity"
-        placeholder="10"
+        placeholder="Event Capacity"
         mt="md"
         name="capacity"
         variant="filled"
