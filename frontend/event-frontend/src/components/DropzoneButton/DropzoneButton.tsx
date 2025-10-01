@@ -6,7 +6,7 @@ import classes from './DropzoneButton.module.css';
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 
-export function DropzoneButton() {
+export function DropzoneButton({ onFileDrop }: { onFileDrop: (file: File) => void }) {
   const theme = useMantineTheme();
   const openRef = useRef<() => void>(null);
 
@@ -14,7 +14,11 @@ export function DropzoneButton() {
     <div className={classes.wrapper}>
       <Dropzone
         openRef={openRef}
-        onDrop={() => {}}
+        onDrop={(files) => {
+          if (files.length > 0) {
+            onFileDrop(files[0]);
+          }
+        }}
         className={classes.dropzone}
         radius="md"
         accept={[MIME_TYPES.png, MIME_TYPES.jpeg]}

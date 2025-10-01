@@ -1,4 +1,5 @@
 package com.standingcat.event.config;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -77,8 +78,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/h2-console/**").permitAll() //allow H2 console for development
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() //allow public registration
-                        .requestMatchers("/api/events").permitAll() //allow anyone to view events list
-                        .requestMatchers("/api/events/{id}").permitAll() //allow anyone to view single event
+                        .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/events").hasRole("ADMIN")
                         .requestMatchers("/api/auth/me").authenticated()
                         .anyRequest().authenticated() //all other API requests require authentication
                 )

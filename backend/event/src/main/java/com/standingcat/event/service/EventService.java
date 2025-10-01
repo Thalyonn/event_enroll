@@ -10,9 +10,17 @@ import jakarta.persistence.Table;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EventService {
@@ -31,12 +39,47 @@ public class EventService {
     }
 
     @Transactional
-    public Event createEvent(Event event, Long adminId) {
-        User adminUser = userService.findById(adminId).orElseThrow(() -> new UserNotFoundException("Admin user not found."));
-        if(!adminUser.getRoles().contains("ROLE_ADMIN"))
+    public Event createEvent(
+            String title,
+            String description,
+            LocalDateTime eventTime,
+            Integer capacity,
+            MultipartFile image,
+            User adminUser) {
+        System.out.println(">>> [Service] Validating roles for user: " + adminUser.getUsername());
+        System.out.println(">>> [Service] DB roles: " + adminUser.getRoles());
+
+        if(!adminUser.getRoles().contains("ROLE_ADMIN")) {
+            System.out.println(">>> [Service] User does NOT have ROLE_ADMIN. Throwing exception.");
             throw new NoRolePermissionException("Non-Admins cannot create events.");
+        }
+        Event event = new Event();
+        event.setTitle(title);
+        event.setDescription(description);
+        event.setEventTime(eventTime);
+        event.setCapacity(capacity);
         event.setOwner(adminUser);
-        return eventRepository.save(event);
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                String uploadDir = "uploads/";
+                Files.createDirectories(Paths.get(uploadDir));
+                String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
+                Path filePath = Paths.get(uploadDir, filename);
+                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + filename);
+                System.out.println(">>> [Service] Image saved to: " + filePath);
+            } catch (IOException e) {
+                System.out.println(">>> [Service] Failed to save image: " + e.getMessage());
+                throw new RuntimeException("Failed to save image", e);
+            }
+        }
+        else {
+            System.out.println(">>> [Service] No image provided, skipping upload.");
+        }
+        Event saved = eventRepository.save(event);
+        System.out.println(">>> [Service] Event saved with ID: " + saved.getId());
+        return saved;
     }
 
     @Transactional

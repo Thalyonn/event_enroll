@@ -8,7 +8,6 @@ import {
   IconNotification,
 } from '@tabler/icons-react';
 import {
-  Anchor,
   Box,
   Burger,
   Button,
@@ -17,9 +16,7 @@ import {
   Divider,
   Drawer,
   Group,
-  HoverCard,
   ScrollArea,
-  SimpleGrid,
   Text,
   ThemeIcon,
   UnstyledButton,
@@ -159,9 +156,12 @@ export function HeaderMenu() {
               ) : (
                 <>
                   {isAdmin && (
-                    <Button>
+                    <Link to="/create">
+                      <Button>
                       Create
-                    </Button>
+                      </Button>
+                    </Link>
+                    
                   )}
                 
                 

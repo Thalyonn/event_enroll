@@ -5,13 +5,17 @@ import com.standingcat.event.model.User;
 import com.standingcat.event.service.EventService;
 import com.standingcat.event.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,21 +40,39 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createEvent(@RequestBody Event event, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> createEvent(@RequestParam("title") String title,
+                                         @RequestParam("description") String description,
+                                         @RequestParam("eventTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventTime,
+                                         @RequestParam("capacity") Integer capacity,
+                                         @RequestParam(value = "image", required = false) MultipartFile image,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println(">>> [Controller] Incoming createEvent request");
+        System.out.println(">>> [Controller] UserDetails username: " + userDetails.getUsername());
+        System.out.println(">>> [Controller] UserDetails authorities: " + userDetails.getAuthorities());
+        System.out.println(">>> [Controller] Title: " + title + ", Desc: " + description + ", EventTime: " + eventTime + ", Capacity: " + capacity);
+        if (image != null) {
+            System.out.println(">>> [Controller] Image received: " + image.getOriginalFilename());
+        } else {
+            System.out.println(">>> [Controller] No image provided");
+        }
+
         Optional<User> adminUser = userService.findByUsername(userDetails.getUsername());
         if(adminUser.isEmpty()) {
+            System.out.println(">>> [Controller] No matching user found in DB");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Authenticated admin user not found."));
 
         }
-        Long adminId = adminUser.get().getId();
-
         try {
-            Event createdEvent = eventService.createEvent(event, adminId);
+            Event createdEvent = eventService.createEvent(
+                    title, description, eventTime, capacity, image, adminUser.get()
+            );
+            System.out.println(">>> [Controller] Event created successfully: " + createdEvent.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
         } catch (RuntimeException e) {
+            System.out.println(">>> [Controller] Error during event creation: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
