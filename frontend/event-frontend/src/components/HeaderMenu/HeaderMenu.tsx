@@ -27,6 +27,7 @@ import { MantineLogo } from '@mantinex/mantine-logo';
 import classes from './HeaderMenu.module.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
+import { useAuth } from '@/context/AuthContext';
 
 const mockdata = [
   {
@@ -67,46 +68,12 @@ export function HeaderMenu() {
   const theme = useMantineTheme();
   const navigate = useNavigate();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAuthenticated, isAdmin, logout } = useAuth();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      console.log("Checking auth");
-      try {
-        const res = await fetch("http://localhost:8080/api/auth/me", {
-          credentials: "include", //send cookie
-        });
-        if(res.ok) {
-          const data = await res.json();
-          console.log("set auth true");
-          setIsAuthenticated(true); // if ok then logged in
-          
-          setIsAdmin(
-            data.roles.some((role: any) => role.authority === "ROLE_ADMIN")
-          );
-        }
-        else {
-          setIsAuthenticated(false);
-          setIsAdmin(false);
-        }
-        
-        
-      } catch {
-        console.log("set auth false");
-        setIsAuthenticated(false);
-      }
-    };
-    checkAuth();
-  },[]);
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8080/api/auth/logout", {
-        method: "POST",
-        credentials: "include", 
-      });
-      setIsAuthenticated(false);
+      await logout();
       navigate("/login");
     } catch (err) {
       console.error("Logout failed", err);

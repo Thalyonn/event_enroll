@@ -13,6 +13,7 @@ import {
 import classes from './AuthenticationTitle.module.css';
 import { useForm } from "@mantine/form"
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export function AuthenticationTitle() {
   const form = useForm({
@@ -26,31 +27,17 @@ export function AuthenticationTitle() {
     password: (value) => (value.length < 2 ? "Password must be at least 2 characters" : null),
     }
   });
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (values: typeof form.values) => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values), 
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Login success:", data);
-
-        //jwt
-        //localStorage.setItem("token", data.token);
-
-        navigate("/");
-      } else {
-        const err = await response.json();
-        console.log("Login failed:", err);
-      }
+      await login(values.username, values.password); 
+      console.log("Login success!");
+      navigate("/"); // redirect to homepage
     } catch (error) {
-      console.error("Error logging in:", error);
+      console.error("Login failed:", error);
+      form.setErrors({ password: "Invalid username or password" });
     }
   };
   //To add: remember me function
