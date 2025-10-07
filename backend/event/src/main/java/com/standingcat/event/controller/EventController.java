@@ -1,5 +1,6 @@
 package com.standingcat.event.controller;
 
+import com.standingcat.event.dto.EventResponse;
 import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
 import com.standingcat.event.service.EventService;
@@ -27,10 +28,19 @@ public class EventController {
     EventService eventService;
     @Autowired
     private UserService userService;
+//    @GetMapping
+//    public ResponseEntity<List<Event>> getAllEvents() {
+//        List<Event> events = eventService.getAllEvents();
+//        return ResponseEntity.ok(events);
+//    }
+
     @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents() {
+    public ResponseEntity<?> getAllEvents() {
         List<Event> events = eventService.getAllEvents();
-        return ResponseEntity.ok(events);
+        List<EventResponse> response = events.stream()
+                .map(EventResponse::new)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}") //Anyone can view a single event
