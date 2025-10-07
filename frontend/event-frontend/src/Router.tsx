@@ -5,6 +5,7 @@ import { BlankLayout } from './layout/BlankLayout';
 import { RegisterPage } from './pages/Register.page';
 import { LoginPage } from './pages/Login.page';
 import { CreateEventPage } from './pages/Create.page'
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
   {
@@ -30,7 +31,12 @@ const router = createBrowserRouter([
       },
       {
         path: '/create',
-        element: <CreateEventPage />
+        element: (
+          <ProtectedRoute requireAdmin>
+            <CreateEventPage />
+          </ProtectedRoute>
+          
+        ),
       },
     ],
   },
