@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/Register.page';
 import { LoginPage } from './pages/Login.page';
 import { CreateEventPage } from './pages/Create.page'
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { EventPage } from './pages/Event.page';
 
 const router = createBrowserRouter([
   {
@@ -13,7 +14,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-    element: <HomePage />,
+        element: <HomePage />,
+      },
+      {
+        path: '/event/:id',
+        element: <EventPage />
       },
     ],
     

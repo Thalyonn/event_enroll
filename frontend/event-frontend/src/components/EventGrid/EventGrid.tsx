@@ -30,6 +30,7 @@ export function EventGrid() {
             {events.map((event: Event) => (
                 <EventCard 
                     key={event.id}
+                    id={event.id}
                     title={event.title}
                     description={event.description}
                     imageUrl={event.imageUrl}

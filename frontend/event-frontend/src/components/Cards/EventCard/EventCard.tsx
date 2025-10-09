@@ -1,6 +1,8 @@
 import { Card, Image, Text, Badge, Button, Group } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 
 interface EventCardProps {
+  id: number;
   title: string;
   description: string;
   imageUrl: string;
@@ -9,8 +11,10 @@ interface EventCardProps {
   currentEnrollments?: number;
 }
 
-export function EventCard({title, description, imageUrl, eventTime, capacity, currentEnrollments} : EventCardProps) {
+export function EventCard({id, title, description, imageUrl, eventTime, capacity, currentEnrollments} : EventCardProps) {
   const isFull = capacity !== undefined && currentEnrollments !== undefined && currentEnrollments >= capacity;
+  const navigate = useNavigate();
+  
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
@@ -36,7 +40,8 @@ export function EventCard({title, description, imageUrl, eventTime, capacity, cu
         {description}
       </Text>
 
-      <Button color="blue" fullWidth mt="md" radius="md">
+      <Button color="blue" fullWidth mt="md" radius="md"
+      onClick={() => navigate(`/event/${id}`)}>
         View More
       </Button>
     </Card>
