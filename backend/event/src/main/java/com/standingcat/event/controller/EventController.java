@@ -43,12 +43,36 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
+//    @GetMapping("/{id}") //Anyone can view a single event
+//    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
+//        return eventService.getEventById(id)
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
+
     @GetMapping("/{id}") //Anyone can view a single event
-    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
+    public ResponseEntity<?> getEventById(@PathVariable Long id) {
         return eventService.getEventById(id)
-                .map(ResponseEntity::ok)
+                .map(event -> {
+                    int currentEnrollments = event.getEnrollments() != null
+                            ? event.getEnrollments().size()
+                            : 0;
+
+                    EventResponse response = new EventResponse(
+                            event.getId(),
+                            event.getTitle(),
+                            event.getDescription(),
+                            event.getImageUrl(),
+                            event.getEventTime(),
+                            event.getCapacity(),
+                            currentEnrollments
+                    );
+
+                    return ResponseEntity.ok(response);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
