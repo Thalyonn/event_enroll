@@ -5,6 +5,7 @@ import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
 import com.standingcat.event.service.EnrollmentService;
 import com.standingcat.event.service.UserService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +68,19 @@ public class EnrollmentController {
 
         List<Enrollment> enrollments = enrollmentService.getEnrollmentsForUser(userId);
         return ResponseEntity.ok(enrollments);
+    }
+
+    @GetMapping("/check/{eventId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, Boolean>> checkUserEnrolledToEvent(@PathVariable Long eventId, @AuthenticationPrincipal UserDetails userDetails) {
+        Optional<User> currentUser = userService.findByUsername(userDetails.getUsername());
+        if (currentUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("enrolled", false));
+        }
+        Long userId = currentUser.get().getId();
+        Boolean response = enrollmentService.checkUserEnrolled(userId, eventId);
+        return ResponseEntity.ok(Map.of("enrolled", response));
+
     }
 
     //users can un-enroll themselves

@@ -83,6 +83,15 @@ public class EnrollmentService {
         return enrollmentRepository.findByUser(user);
     }
 
+    public Boolean checkUserEnrolled(Long userId, Long eventId) {
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Event event = eventService.getEventById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found."));
+        boolean userEnrolled = enrollmentRepository.findByUserAndEvent(user, event).isPresent();
+        return userEnrolled;
+    }
+
 
 
 }

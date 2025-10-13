@@ -43,13 +43,6 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
-//    @GetMapping("/{id}") //Anyone can view a single event
-//    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
-//        return eventService.getEventById(id)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-
     @GetMapping("/{id}") //Anyone can view a single event
     public ResponseEntity<?> getEventById(@PathVariable Long id) {
         return eventService.getEventById(id)
