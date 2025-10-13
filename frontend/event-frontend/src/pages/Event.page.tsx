@@ -1,4 +1,4 @@
-import { Container, Image } from "@mantine/core";
+import { Container, Image, Title, Flex, Text, Button, Box, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -29,14 +29,47 @@ export function EventPage() {
 
   return (
     <>
-    <Container>
-        <Image
-        //set to imageUrl
-            src="https://picsum.photos/id/237/200/300"
-            height={160}
-            alt="Event Image"
-        />
-    </Container>
+    
+    <Stack gap="lg" 
+    style={{ flexGrow: 1, minWidth: '300px' }} 
+    align="center">
+      <Title ta="left">{event?.title}</Title>
+      <Flex
+      mih={50}
+      gap="sm"
+      justify="flex-start"
+      align="flex-start"
+      direction="row"
+      wrap="wrap"
+      >
+        <Box 
+            w={300} // Set a fixed width for the image wrapper
+            style={{ flexShrink: 0 }} // Prevents image from shrinking in Flex
+        >
+          <Image
+              src="https://picsum.photos/id/237/200/300"
+              h={400} 
+              fit="contain" 
+              alt="Event Image"
+          />
+        </Box>
+        
+        <Stack 
+            gap="lg" 
+            style={{ flexGrow: 1, minWidth: '300px' }} 
+        >
+          <Text>{event?.description}</Text>
+          <Text>Starts at: {event?.eventTime}</Text>
+          <Text>
+            Currently Enrolled: {event?.currentEnrollments} / {event?.capacity}
+          </Text>
+          <Button>Enroll</Button>
+        </Stack>
+        
+      </Flex>
+        
+    </Stack>
+    
       
     </>
   );

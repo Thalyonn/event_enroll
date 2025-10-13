@@ -100,7 +100,7 @@ export function HeaderMenu() {
 
   console.log("HeaderMenu rendered");
   return (
-    <Box pb={120}>
+    <Box pb={16}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           <MantineLogo size={30} />
