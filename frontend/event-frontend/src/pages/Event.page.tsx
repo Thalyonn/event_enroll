@@ -1,7 +1,8 @@
-import { Container, Image, Title, Flex, Text, Button, Box, Stack } from "@mantine/core";
+import { Image, Title, Flex, Text, Button, Box, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { NothingFoundBackground } from "@/components/errors/404/NothingFoundBackground";
+import { useAuth } from "@/context/AuthContext";
 
 interface Event {
   id: number;
@@ -21,6 +22,9 @@ export function EventPage() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(true);
   const url = `http://localhost:8080/api/events/${id}`;
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   
   useEffect(() => {
   fetch(url)
@@ -59,6 +63,9 @@ export function EventPage() {
 
   const handleEnroll = async () => {
     if (!id) {return;}
+    if(!isAuthenticated) {
+      navigate("/login");
+    }
     setLoading(true);
     setMessage(null);
 
