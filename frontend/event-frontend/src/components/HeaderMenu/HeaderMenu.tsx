@@ -21,6 +21,7 @@ import {
   ThemeIcon,
   UnstyledButton,
   useMantineTheme,
+  Anchor,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { MantineLogo } from '@mantinex/mantine-logo';
@@ -103,7 +104,10 @@ export function HeaderMenu() {
     <Box pb={16}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
-          <MantineLogo size={30} />
+          <Anchor href="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <MantineLogo size={30} />
+          </Anchor>
+          
 
           
 

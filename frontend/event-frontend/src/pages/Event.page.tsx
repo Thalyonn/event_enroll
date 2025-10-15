@@ -1,6 +1,7 @@
 import { Container, Image, Title, Flex, Text, Button, Box, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { NothingFoundBackground } from "@/components/errors/404/NothingFoundBackground";
 
 interface Event {
   id: number;
@@ -23,9 +24,20 @@ export function EventPage() {
   
   useEffect(() => {
   fetch(url)
-    .then((res) => res.json())
+    .then((res) => {
+      if(res.status === 404) {
+        throw new Error("Event not found");
+      }
+      if(!res.ok) {
+        throw new Error("Failed to fetch event");
+      }  
+      return res.json();
+    })
     .then((data) => setEvent(data))
-    .catch((err) => console.error('Failed to fetch events', err));
+    .catch((err) => {console.error('Failed to fetch events', err)
+      setEvent(null);
+      setMessage(err.message);
+    });
   },
   []);
 
@@ -78,6 +90,15 @@ export function EventPage() {
 
   const isFull =
     event && event.capacity !== undefined && event.currentEnrollments >= event.capacity;
+
+  //to do: take account of other possible error messages. Only 404 for now.
+  if(message){
+    return (
+      <>
+       <NothingFoundBackground />
+      </>
+    )
+  }
 
   return (
     <>

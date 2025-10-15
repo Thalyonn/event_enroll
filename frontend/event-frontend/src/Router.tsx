@@ -7,6 +7,7 @@ import { LoginPage } from './pages/Login.page';
 import { CreateEventPage } from './pages/Create.page'
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { EventPage } from './pages/Event.page';
+import { ErrorNotFound } from './pages/ErrorNotFound.page';
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: '/event/:id',
         element: <EventPage />
+      },
+      {
+        path: '*', //404 on unknown routes
+        element: <ErrorNotFound />,
       },
     ],
     
