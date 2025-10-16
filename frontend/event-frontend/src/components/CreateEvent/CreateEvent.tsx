@@ -9,6 +9,8 @@ import MDEditor from "@uiw/react-md-editor"
 //needs title, description, imageUrl, eventTime, capacity
 export function CreateEvent() {
   const [file, setFile] = useState<File | null>(null);
+  const [value, setValue] = useState("**Describe the event in more detail here!**");
+
   const form = useForm({
     initialValues: {
       title: '',
@@ -101,7 +103,8 @@ export function CreateEvent() {
         variant="filled"
         {...form.getInputProps('description')}
       />
-      <MDEditor />
+      <MDEditor value={value} onChange={setValue}/>
+      
 
       <Container mt="sm">
         <DropzoneButton onFileDrop={(f) => setFile(f)} />
