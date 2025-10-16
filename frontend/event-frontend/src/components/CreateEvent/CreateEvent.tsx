@@ -1,9 +1,10 @@
-import { Button, Group, Textarea, TextInput, Title } from '@mantine/core';
+import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
 import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
 import { useState } from 'react';
 import '@mantine/dates/styles.css';
+import MDEditor from "@uiw/react-md-editor"
 
 //needs title, description, imageUrl, eventTime, capacity
 export function CreateEvent() {
@@ -100,8 +101,13 @@ export function CreateEvent() {
         variant="filled"
         {...form.getInputProps('description')}
       />
+      <MDEditor />
 
-      <DropzoneButton onFileDrop={(f) => setFile(f)} />
+      <Container mt="sm">
+        <DropzoneButton onFileDrop={(f) => setFile(f)} />
+      </Container>
+
+      
 
       <Group justify="center" mt="xl">
         <Button type="submit" size="md">

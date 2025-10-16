@@ -27,6 +27,7 @@
     "@mantine/hooks": "8.2.8",
     "@mantinex/mantine-logo": "^2.0.0",
     "@tabler/icons-react": "^3.34.1",
+    "@uiw/react-md-editor": "^4.0.8",
     "dayjs": "^1.11.18",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
