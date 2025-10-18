@@ -52,4 +52,7 @@ public class Event
     @EqualsAndHashCode.Exclude
     private Set<Enrollment> enrollments = new HashSet<>();
 
+    @Column(columnDefinition = "TEXT")
+    private String descriptionMarkdown;
+
 }

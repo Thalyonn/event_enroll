@@ -42,6 +42,7 @@ public class EventService {
     public Event createEvent(
             String title,
             String description,
+            String descriptionMarkdown,
             LocalDateTime eventTime,
             Integer capacity,
             MultipartFile image,
@@ -56,6 +57,7 @@ public class EventService {
         Event event = new Event();
         event.setTitle(title);
         event.setDescription(description);
+        event.setDescriptionMarkdown(descriptionMarkdown);
         event.setEventTime(eventTime);
         event.setCapacity(capacity);
         event.setOwner(adminUser);
@@ -94,6 +96,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException("Event not found."));
         event.setEventTime(updatedEvent.getEventTime());
         event.setDescription(updatedEvent.getDescription());
+        event.setDescriptionMarkdown(updatedEvent.getDescriptionMarkdown());
         event.setImageUrl(updatedEvent.getImageUrl());
         event.setCapacity(updatedEvent.getCapacity());
         event.setTitle(updatedEvent.getTitle());

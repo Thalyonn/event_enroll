@@ -9,7 +9,7 @@ import MDEditor from "@uiw/react-md-editor"
 //needs title, description, imageUrl, eventTime, capacity
 export function CreateEvent() {
   const [file, setFile] = useState<File | null>(null);
-  const [value, setValue] = useState("**Describe the event in more detail here!**");
+  const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
 
   const form = useForm({
     initialValues: {
@@ -28,6 +28,7 @@ export function CreateEvent() {
     const formData = new FormData();
     formData.append('title', values.title);
     formData.append('description', values.description);
+    formData.append('descriptionMarkdown', markdown || '')
     formData.append('eventTime', new Date(values.eventTime).toISOString());
     formData.append('capacity', values.capacity.toString());
 
@@ -103,7 +104,7 @@ export function CreateEvent() {
         variant="filled"
         {...form.getInputProps('description')}
       />
-      <MDEditor value={value} onChange={setValue}/>
+      <MDEditor value={markdown} onChange={setMarkdown} />
       
 
       <Container mt="sm">

@@ -18,6 +18,7 @@ public class EventResponse {
     private LocalDateTime eventTime;
     private Integer capacity;
     private int currentEnrollments;
+    private String descriptionMarkdown;
 
     public EventResponse(Event event) {
         this.id = event.getId();
@@ -27,5 +28,6 @@ public class EventResponse {
         this.eventTime = event.getEventTime();
         this.capacity = event.getCapacity();
         this.currentEnrollments = event.getEnrollments().size();
+        this.descriptionMarkdown = event.getDescriptionMarkdown();
     }
 }

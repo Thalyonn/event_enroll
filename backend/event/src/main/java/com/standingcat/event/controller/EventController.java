@@ -58,7 +58,8 @@ public class EventController {
                             event.getImageUrl(),
                             event.getEventTime(),
                             event.getCapacity(),
-                            currentEnrollments
+                            currentEnrollments,
+                            event.getDescriptionMarkdown()
                     );
 
                     return ResponseEntity.ok(response);
@@ -71,6 +72,7 @@ public class EventController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createEvent(@RequestParam("title") String title,
                                          @RequestParam("description") String description,
+                                         @RequestParam(value = "descriptionMarkdown", required = false) String descriptionMarkdown,
                                          @RequestParam("eventTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventTime,
                                          @RequestParam("capacity") Integer capacity,
                                          @RequestParam(value = "image", required = false) MultipartFile image,
@@ -94,7 +96,7 @@ public class EventController {
         }
         try {
             Event createdEvent = eventService.createEvent(
-                    title, description, eventTime, capacity, image, adminUser.get()
+                    title, description, descriptionMarkdown, eventTime, capacity, image, adminUser.get()
             );
             System.out.println(">>> [Controller] Event created successfully: " + createdEvent.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
