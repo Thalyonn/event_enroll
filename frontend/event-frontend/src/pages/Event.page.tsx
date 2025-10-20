@@ -5,6 +5,7 @@ import { NothingFoundBackground } from "@/components/errors/404/NothingFoundBack
 import { useAuth } from "@/context/AuthContext";
 import MDEditor from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
+import { MarkdownComponent } from "@/components/MarkdownComponent/MarkdownComponent";
 
 interface Event {
   id: number;
@@ -159,10 +160,12 @@ export function EventPage() {
       
         
     </Stack>
-    <Box mx="lg" my="lg">
-      <MDEditor.Markdown source={event?.descriptionMarkdown}
-        rehypePlugins={[[rehypeSanitize]]}
-        style={{whiteSpace: 'pre-wrap'}}/>
+    <Box 
+      mx="auto"
+      my="lg"
+      px={{ base: 'md', md: 'lg' }}
+      style={{ maxWidth: 800 }}>
+      <MarkdownComponent markdown={event?.descriptionMarkdown}/>
     </Box>
     
       

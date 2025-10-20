@@ -1,0 +1,87 @@
+.container {
+    margin: 2rem auto;
+    max-width: 800px; 
+    padding: 0 1rem;
+    background-color: var(--mantine-color-body);
+}
+
+
+.container[data-color-mode="dark"] :global(.wmde-markdown) {
+  background-color: var(--mantine-color-dark-7) !important;
+}
+/* Inline code & tt inside markdown */
+
+/* Inline code & tt – dark mode */
+.container[data-color-mode="dark"]  :global(.wmde-markdown) code,
+.container[data-color-mode="dark"] :global(.wmde-markdown) tt {
+  background-color: var(--mantine-color-dark-8) !important;   /* dark mode code background */
+  color: var(--mantine-color-gray-2) !important;               /* dark mode code text */
+}
+
+.markdown {
+    font-family: var(--mantine-font-family);
+    color: var(--mantine-color-text);
+    line-height: 1.6;
+}
+
+/* for headings */
+.markdown h1 {
+    font-size: 2.25rem;
+    margin: 1.5rem 0 0.75rem;
+}
+.markdown h2 {
+    font-size: 1.75rem;
+    margin: 1.25rem 0 0.6rem;
+}
+.markdown h3 {
+    font-size: 1.3rem;
+    margin: 1rem 0 0.5rem;
+}
+
+/* for paragraphs */
+.markdown p {
+    margin-bottom: 1rem;
+}
+
+
+/* for images inside markdown */
+.markdown img {
+    height: auto;
+    max-width: 100%;
+    
+    margin: 1.5rem 0;
+}
+
+
+/* for links */
+.markdown a {
+    color: var(--mantine-color-blue-6);
+    text-decoration: underline;
+}
+.markdown a:hover {
+    text-decoration: none;
+    border-bottom: 1px solid var(--mantine-color-blue-6);
+}
+
+
+/* for code blocks */
+.markdown pre {
+    background-color: var(--mantine-color-gray-1);
+    padding: 1rem;
+    overflow-x: auto;
+    border-radius: 4px;
+    margin: 1.5rem 0;
+}
+.markdown code {
+    background-color: var(--mantine-color-gray-0);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+[data-color-mode="dark"] .markdown {
+    color: var(--mantine-color-gray-2);
+}
+[data-color-mode="dark"] .markdown pre {
+    background-color: var(--mantine-color-gray-8);
+}

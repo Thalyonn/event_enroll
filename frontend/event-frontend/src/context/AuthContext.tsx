@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             body: JSON.stringify({ username, password }),
         });
 
-        if (!res.ok) throw new Error("Login failed");
+        if (!res.ok) {throw new Error("Login failed");}
 
         await fetchAuth(); 
     };
