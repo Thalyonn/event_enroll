@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { NothingFoundBackground } from "@/components/errors/404/NothingFoundBackground";
 import { useAuth } from "@/context/AuthContext";
+import MDEditor from "@uiw/react-md-editor";
+import rehypeSanitize from "rehype-sanitize";
 
 interface Event {
   id: number;
@@ -12,6 +14,7 @@ interface Event {
   eventTime: string;
   capacity: number;
   currentEnrollments: number;
+  descriptionMarkdown: string;
 }
 
 export function EventPage() {
@@ -153,8 +156,14 @@ export function EventPage() {
         </Stack>
         
       </Flex>
+      
         
     </Stack>
+    <Box mx="lg" my="lg">
+      <MDEditor.Markdown source={event?.descriptionMarkdown}
+        rehypePlugins={[[rehypeSanitize]]}
+        style={{whiteSpace: 'pre-wrap'}}/>
+    </Box>
     
       
     </>

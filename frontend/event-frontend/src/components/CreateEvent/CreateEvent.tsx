@@ -5,6 +5,8 @@ import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
 import { useState } from 'react';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
+import rehypeSanitize from "rehype-sanitize";
+
 
 //needs title, description, imageUrl, eventTime, capacity
 export function CreateEvent() {
@@ -104,7 +106,9 @@ export function CreateEvent() {
         variant="filled"
         {...form.getInputProps('description')}
       />
-      <MDEditor value={markdown} onChange={setMarkdown} />
+      <MDEditor value={markdown} onChange={setMarkdown} 
+      previewOptions={{rehypePlugins: [[rehypeSanitize]],
+  }}/>
       
 
       <Container mt="sm">
