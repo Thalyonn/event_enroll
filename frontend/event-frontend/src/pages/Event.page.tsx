@@ -127,10 +127,12 @@ export function EventPage() {
       wrap="wrap"
       >
         <Box 
+            mx="auto"
             w={300} // Set a fixed width for the image wrapper
             style={{ flexShrink: 0 }} // Prevents image from shrinking in Flex
         >
           <Image
+              
               src="https://picsum.photos/id/237/200/300"
               h={400} 
               fit="contain" 
@@ -141,10 +143,11 @@ export function EventPage() {
         <Stack 
             gap="lg" 
             style={{ flexGrow: 1, minWidth: '300px' }} 
+            mx={{ base: 'md', sm: 'xl', md: '0' }}
         >
           <Text>{event?.description}</Text>
           <Text>Starts at: {event?.eventTime}</Text>
-          <Text>
+          <Text fz="sm" c="gray.7">
             Currently Enrolled: {event?.currentEnrollments} / {event?.capacity}
           </Text>
           <Button

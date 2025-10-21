@@ -128,7 +128,7 @@ export function HeaderMenu() {
                 <>
                   {isAdmin && (
                     <Link to="/create">
-                      <Button>
+                      <Button color='lime.7'>
                       Create
                       </Button>
                     </Link>
