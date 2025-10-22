@@ -26,7 +26,7 @@ export function EventPage() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(true);
   const url = `http://localhost:8080/api/events/${id}`;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   
@@ -156,6 +156,13 @@ export function EventPage() {
             disabled={isFull || isEnrolled || checkingEnrollment}
             color={isFull ? "gray" : isEnrolled ? "teal" : "blue"}
             >{isFull ? "Event is Full" : isEnrolled ? "Enrolled" : "Enroll"}</Button>
+          {isAdmin && <>
+          <Button>View Enrolled</Button>
+          <Button color="yellow">Edit</Button>
+          <Button color="red">Hide</Button>
+          
+          </>
+          }
           {message && <Text color="teal">{message}</Text>}
         </Stack>
         
