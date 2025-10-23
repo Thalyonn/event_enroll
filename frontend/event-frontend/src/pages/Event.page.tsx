@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import MDEditor from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
 import { MarkdownComponent } from "@/components/MarkdownComponent/MarkdownComponent";
+import { ViewEnrolledModal } from "@/components/Modals/ViewEnrolled/ViewEnrolledModal";
 
 interface Event {
   id: number;
@@ -20,9 +21,11 @@ interface Event {
 
 export function EventPage() {
   const { id } = useParams<{ id: string }>();
+  const eventIdNumber = Number(id);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(true);
   const url = `http://localhost:8080/api/events/${id}`;
@@ -44,7 +47,7 @@ export function EventPage() {
     .then((data) => setEvent(data))
     .catch((err) => {console.error('Failed to fetch events', err)
       setEvent(null);
-      setMessage(err.message);
+      setError(err.message);
     });
   },
   []);
@@ -72,6 +75,7 @@ export function EventPage() {
     }
     setLoading(true);
     setMessage(null);
+    
 
     try {
       const response = await fetch(`http://localhost:8080/api/enrollments/${id}`, {
@@ -103,7 +107,7 @@ export function EventPage() {
     event && event.capacity !== undefined && event.currentEnrollments >= event.capacity;
 
   //to do: take account of other possible error messages. Only 404 for now.
-  if(message){
+  if(error){
     return (
       <>
        <NothingFoundBackground />
@@ -156,8 +160,8 @@ export function EventPage() {
             disabled={isFull || isEnrolled || checkingEnrollment}
             color={isFull ? "gray" : isEnrolled ? "teal" : "blue"}
             >{isFull ? "Event is Full" : isEnrolled ? "Enrolled" : "Enroll"}</Button>
-          {isAdmin && <>
-          <Button>View Enrolled</Button>
+          {isAdmin && id && <>
+          <ViewEnrolledModal eventId={eventIdNumber}/>
           <Button color="yellow">Edit</Button>
           <Button color="red">Hide</Button>
           

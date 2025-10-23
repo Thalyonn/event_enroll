@@ -1,5 +1,6 @@
 package com.standingcat.event.controller;
 
+import com.standingcat.event.dto.EnrollmentResponse;
 import com.standingcat.event.model.Enrollment;
 import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
@@ -49,11 +50,22 @@ public class EnrollmentController {
     public ResponseEntity<?> getEnrollmentsForEvent(@PathVariable Long eventId) {
         try {
             List<Enrollment> enrollmentList = enrollmentService.getEnrollmentsForEvent(eventId);
-            return ResponseEntity.ok(enrollmentList);
+            List<EnrollmentResponse> enrollmentResponse = enrollmentList.stream().map(EnrollmentResponse::new).toList();
+            return ResponseEntity.ok(enrollmentResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
+//    @GetMapping("/event/{eventId}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<?> getEnrollmentsForEvent(@PathVariable Long eventId) {
+//        try {
+//            List<Enrollment> enrollmentList = enrollmentService.getEnrollmentsForEvent(eventId);
+//            return ResponseEntity.ok(enrollmentList);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+//        }
+//    }
 
     //user see events they are enrolled in
 

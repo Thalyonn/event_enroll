@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconChevronDown, IconChevronUp, IconSearch, IconSelector } from '@tabler/icons-react';
 import {
   Center,
@@ -12,11 +12,16 @@ import {
   Button
 } from '@mantine/core';
 import classes from './TableSort.module.css';
+import { useAuth } from '@/context/AuthContext';
+
 
 interface RowData {
-  name: string;
-  email: string;
+  id: number;
+  enrollmentTime: string;
   userId: number;
+  email: string;
+  username: string;
+  eventId: number;
 }
 
 interface ThProps {
@@ -46,8 +51,15 @@ function Th({ children, reversed, sorted, onSort }: ThProps) {
 
 function filterData(data: RowData[], search: string) {
   const query = search.toLowerCase().trim();
+  if (data.length === 0) {
+    return [];
+  }
   return data.filter((item) =>
-    keys(data[0]).some((key) => item[key].toLowerCase().includes(query))
+    keys(data[0]).some((key) => {
+      const val = String(item[key]);
+      
+      return val.toLowerCase().includes(query)
+    })
   );
 }
 
@@ -63,17 +75,20 @@ function sortData(
 
   return filterData(
     [...data].sort((a, b) => {
+      const valB = String(b[sortBy])
+      const valA = String(a[sortBy])
       if (payload.reversed) {
-        return b[sortBy].localeCompare(a[sortBy]);
+        
+        return valB.localeCompare(valA);
       }
-
-      return a[sortBy].localeCompare(b[sortBy]);
+      
+      return valA.localeCompare(valB);
     }),
     payload.search
   );
 }
 
-const data = [
+const data_sample = [
   {
     name: 'Athena Weissnat',
     eventName: 'Little - Rippin',
@@ -156,85 +171,128 @@ const data = [
   },
 ];
 
-export function TableSort() {
-  const [search, setSearch] = useState('');
-  const [sortedData, setSortedData] = useState(data);
-  const [sortBy, setSortBy] = useState<keyof RowData | null>(null);
-  const [reverseSortDirection, setReverseSortDirection] = useState(false);
+interface Enrollment {
+    id: number;
+    enrollmentTime: string;
+    userId: number;
+    email: string;
+    username: string;
+    eventId: number;
+}
 
-  const setSorting = (field: keyof RowData) => {
-    const reversed = field === sortBy ? !reverseSortDirection : false;
-    setReverseSortDirection(reversed);
-    setSortBy(field);
-    setSortedData(sortData(data, { sortBy: field, reversed, search }));
-  };
+interface TableSortProps {
+    eventId: number;
+}
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.currentTarget;
-    setSearch(value);
-    setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search: value }));
-  };
+export function TableSort({eventId} : TableSortProps) {
+    const [data, setData] = useState<Enrollment[]>([]);
+    const [search, setSearch] = useState('');
+    const [sortedData, setSortedData] = useState(data);
+    const [sortBy, setSortBy] = useState<keyof RowData | null>(null);
+    const [reverseSortDirection, setReverseSortDirection] = useState(false);
+    const { isAuthenticated, isAdmin } = useAuth();
 
-  const rows = sortedData.map((row) => (
-    <Table.Tr key={row.name}>
-      <Table.Td>{row.name}</Table.Td>
-      <Table.Td>{row.email}</Table.Td>
-      <Table.Td className={classes.actionColumn}>
-        <Button
-            size="xs"
-            variant="outline">
-            Delete
-        </Button>
-      </Table.Td>
-    </Table.Tr>
-  ));
+    
+    const url = `http://localhost:8080/api/enrollments/event/${eventId}`;
 
-  return (
-    <ScrollArea>
-      <TextInput
-        placeholder="Search by any field"
-        mb="md"
-        leftSection={<IconSearch size={16} stroke={1.5} />}
-        value={search}
-        onChange={handleSearchChange}
-      />
-      <Table horizontalSpacing="md" verticalSpacing="xs" miw={700} layout="fixed">
-        <Table.Tbody>
-          <Table.Tr>
-            <Th
-              sorted={sortBy === 'name'}
-              reversed={reverseSortDirection}
-              onSort={() => setSorting('name')}
-            >
-              Name
-            </Th>
-            <Th
-              sorted={sortBy === 'email'}
-              reversed={reverseSortDirection}
-              onSort={() => setSorting('email')}
-            >
-              Email
-            </Th>
-            <Table.Th className={classes.actionColumn}>
-                Actions    
-            </Table.Th>
-            
-          </Table.Tr>
-        </Table.Tbody>
-        <Table.Tbody>
-          {rows.length > 0 ? (
-            rows
-          ) : (
+    useEffect(() => {
+        if(isAuthenticated && isAdmin)
+        {
+            fetch(url, {credentials: "include"})
+            .then((res) => {
+            if(res.status === 404) {
+                throw new Error("Error 404 on getting enrollments");
+            }
+            if(!res.ok) {
+                throw new Error("Failed to fetch enrollments on event");
+            }  
+            return res.json();
+            })
+            .then((data) => setData(data))
+            .catch((err) => {console.error('Failed to fetch enrollments', err)
+            });
+        }
+        
+    },[]);
+
+    useEffect(() => {
+      setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search }));
+    },[data, sortBy,reverseSortDirection,search]);
+
+
+    const setSorting = (field: keyof RowData) => {
+        const reversed = field === sortBy ? !reverseSortDirection : false;
+        setReverseSortDirection(reversed);
+        setSortBy(field);
+        setSortedData(sortData(data, { sortBy: field, reversed, search }));
+    };
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.currentTarget;
+        setSearch(value);
+        setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search: value }));
+    };
+
+    const rows = sortedData.map((row) => (
+        <Table.Tr key={row.userId}>
+        <Table.Td>{row.username}</Table.Td>
+        <Table.Td>{row.email}</Table.Td>
+        <Table.Td className={classes.actionColumn}>
+            <Button
+                size="xs"
+                variant="outline">
+                Delete
+            </Button>
+        </Table.Td>
+        </Table.Tr>
+    ));
+
+    return (
+        <ScrollArea>
+        <TextInput
+            placeholder="Search by any field"
+            mb="md"
+            leftSection={<IconSearch size={16} stroke={1.5} />}
+            value={search}
+            onChange={handleSearchChange}
+        />
+        <Table horizontalSpacing="md" verticalSpacing="xs" miw={700} layout="fixed">
+            <Table.Tbody>
             <Table.Tr>
-              <Table.Td colSpan={Object.keys(data[0]).length}>
-                <Text fw={500} ta="center">
-                  Nothing found
-                </Text>
-              </Table.Td>
+                <Th
+                sorted={sortBy === 'username'}
+                reversed={reverseSortDirection}
+                onSort={() => setSorting('username')}
+                >
+                Name
+                </Th>
+                <Th
+                sorted={sortBy === 'email'}
+                reversed={reverseSortDirection}
+                onSort={() => setSorting('email')}
+                >
+                Email
+                </Th>
+                <Table.Th className={classes.actionColumn}>
+                    Actions    
+                </Table.Th>
+                
             </Table.Tr>
-          )}
-        </Table.Tbody>
-      </Table>
-    </ScrollArea>
-  );
+            </Table.Tbody>
+            <Table.Tbody>
+            {rows.length > 0 ? (
+                rows
+            ) : (
+                <Table.Tr>
+                <Table.Td colSpan={data.length > 0 ? Object.keys(data[0]).length : 3}> 
+                    <Text fw={500} ta="center">
+                    Nothing found
+                    </Text>
+                </Table.Td>
+                </Table.Tr>
+            )}
+            </Table.Tbody>
+        </Table>
+        </ScrollArea>
+    );
 }
