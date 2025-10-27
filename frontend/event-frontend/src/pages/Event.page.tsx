@@ -32,9 +32,9 @@ export function EventPage() {
   const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
 
-  
-  useEffect(() => {
-  fetch(url)
+  const getEvent = async () => {
+    console.log("getting event again");
+    fetch(url)
     .then((res) => {
       if(res.status === 404) {
         throw new Error("Event not found");
@@ -49,11 +49,9 @@ export function EventPage() {
       setEvent(null);
       setError(err.message);
     });
-  },
-  []);
+  }
 
-  useEffect(() => {
-    if (!id) {return;}
+  const checkEnrolled = async () => {
     setCheckingEnrollment(true);
     fetch(`http://localhost:8080/api/enrollments/check/${id}`, {
       credentials: "include",
@@ -62,6 +60,21 @@ export function EventPage() {
       .then((data) => setIsEnrolled(data.enrolled))
       .catch(() => setIsEnrolled(false))
       .finally(() => setCheckingEnrollment(false));
+  }
+
+  const onModalClose = () => {
+    getEvent();
+    checkEnrolled();
+  }
+  
+  useEffect(() => {
+  getEvent();
+  },
+  []);
+
+  useEffect(() => {
+    if (!id) {return;}
+    checkEnrolled();
   }, [id]);
 
   console.log(event);
@@ -161,7 +174,7 @@ export function EventPage() {
             color={isFull ? "gray" : isEnrolled ? "teal" : "blue"}
             >{isFull ? "Event is Full" : isEnrolled ? "Enrolled" : "Enroll"}</Button>
           {isAdmin && id && <>
-          <ViewEnrolledModal eventId={eventIdNumber}/>
+          <ViewEnrolledModal eventId={eventIdNumber} onClose={onModalClose}/>
           <Button color="yellow">Edit</Button>
           <Button color="red">Hide</Button>
           
