@@ -184,6 +184,13 @@ interface TableSortProps {
     eventId: number;
 }
 
+interface EnrollData {
+  id: number;
+  eventId: number;
+  userId: number;
+  
+}
+
 export function TableSort({eventId} : TableSortProps) {
     const [data, setData] = useState<Enrollment[]>([]);
     const [search, setSearch] = useState('');
@@ -233,6 +240,11 @@ export function TableSort({eventId} : TableSortProps) {
         setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search: value }));
     };
 
+    const handleDelete = (enrollment : EnrollData) => {
+      console.log("enrollment ", enrollment.id, " ", enrollment.eventId," ", enrollment.userId);
+
+    }
+
     const rows = sortedData.map((row) => (
         <Table.Tr key={row.userId}>
         <Table.Td>{row.username}</Table.Td>
@@ -240,7 +252,14 @@ export function TableSort({eventId} : TableSortProps) {
         <Table.Td className={classes.actionColumn}>
             <Button
                 size="xs"
-                variant="outline">
+                variant="outline"
+                onClick={() => {
+                  handleDelete({
+                    id: row.id,
+                    userId: row.userId,
+                    eventId: row.eventId
+                  })
+                }}>
                 Delete
             </Button>
         </Table.Td>

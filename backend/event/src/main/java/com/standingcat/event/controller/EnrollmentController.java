@@ -56,6 +56,7 @@ public class EnrollmentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
+
 //    @GetMapping("/event/{eventId}")
 //    @PreAuthorize("hasRole('ADMIN')")
 //    public ResponseEntity<?> getEnrollmentsForEvent(@PathVariable Long eventId) {
@@ -112,6 +113,16 @@ public class EnrollmentController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
-
+    //admins can remove user enrollments
+    @DeleteMapping("/admin/{eventId}/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> unEnrollUserFromEventAdmin(@PathVariable Long eventId, @PathVariable Long userId) {
+        try {
+            enrollmentService.unEnrollUserFromEvent(userId, eventId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
 
 }
