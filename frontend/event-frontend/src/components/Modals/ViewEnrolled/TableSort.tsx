@@ -240,8 +240,22 @@ export function TableSort({eventId} : TableSortProps) {
         setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search: value }));
     };
 
-    const handleDelete = (enrollment : EnrollData) => {
+    const handleDelete = async (enrollment : EnrollData) => {
       console.log("enrollment ", enrollment.id, " ", enrollment.eventId," ", enrollment.userId);
+      try {
+        const res = await fetch(`http://localhost:8080/api/enrollments/admin/${enrollment.eventId}/${enrollment.userId}`,{
+          method: 'DELETE',
+          credentials: 'include', 
+        });
+        if(!res.ok) {
+          throw new Error("Deleting failed");
+        } else if(res.ok) {
+          setData(prev => prev.filter(e => !(e.id === enrollment.id)));
+        }
+      } catch(e) {
+        console.error("deleting error: ",  e);
+      }
+      
 
     }
 
