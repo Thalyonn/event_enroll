@@ -77,31 +77,18 @@ public class EventController {
                                          @RequestParam("capacity") Integer capacity,
                                          @RequestParam(value = "image", required = false) MultipartFile image,
                                          @AuthenticationPrincipal UserDetails userDetails) {
-        System.out.println(">>> [Controller] Incoming createEvent request");
-        System.out.println(">>> [Controller] UserDetails username: " + userDetails.getUsername());
-        System.out.println(">>> [Controller] UserDetails authorities: " + userDetails.getAuthorities());
-        System.out.println(">>> [Controller] Title: " + title + ", Desc: " + description + ", EventTime: " + eventTime + ", Capacity: " + capacity);
-        if (image != null) {
-            System.out.println(">>> [Controller] Image received: " + image.getOriginalFilename());
-        } else {
-            System.out.println(">>> [Controller] No image provided");
-        }
-
+        
         Optional<User> adminUser = userService.findByUsername(userDetails.getUsername());
         if(adminUser.isEmpty()) {
-            System.out.println(">>> [Controller] No matching user found in DB");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Authenticated admin user not found."));
-
         }
         try {
             Event createdEvent = eventService.createEvent(
                     title, description, descriptionMarkdown, eventTime, capacity, image, adminUser.get()
             );
-            System.out.println(">>> [Controller] Event created successfully: " + createdEvent.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
         } catch (RuntimeException e) {
-            System.out.println(">>> [Controller] Error during event creation: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
