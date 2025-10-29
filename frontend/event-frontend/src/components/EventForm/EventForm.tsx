@@ -7,18 +7,24 @@ import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
 
+interface EventFormProps {
+  mode: "create" | "edit";
+  eventData?: any;
+  onSubmit: (formData: FormData) => void;
+}
 
-export function CreateEvent() {
+export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
-
+  
+  
   const form = useForm({
     initialValues: {
-      title: '',
-      description: '',
-      eventTime: '',
-      capacity: '',
-      imageUrl: '',
+      title: eventData.title || '',
+      description: eventData.description || '',
+      eventTime: eventData.eventTime || '',
+      capacity: eventData.capacity || '',
+      imageUrl: eventData.imageUrl || '',
     },
     validate: {
       title: (value) => value.trim().length < 2,
@@ -37,18 +43,7 @@ export function CreateEvent() {
       formData.append('image', file);
     }
 
-    const res = await fetch('http://localhost:8080/api/events', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include', 
-    });
-
-    if (!res.ok) {
-      console.error('Error creating event');
-    } else {
-      const createdEvent = await res.json();
-      console.log('Event created:', createdEvent);
-    }
+    onSubmit(formData);
 
   };
 
@@ -63,7 +58,7 @@ export function CreateEvent() {
         fw={900}
         ta="center"
       >
-        Create Event
+        {mode === "create" ? "Create Event" : "Edit Event"}
       </Title>
 
       
@@ -118,7 +113,7 @@ export function CreateEvent() {
 
       <Group justify="center" mt="xl">
         <Button type="submit" size="md">
-          Create Event
+          {mode === "create" ? "Create Event" : "Save Changes"}
         </Button>
       </Group>
     </form>

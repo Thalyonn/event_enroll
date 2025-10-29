@@ -77,7 +77,7 @@ public class EventController {
                                          @RequestParam("capacity") Integer capacity,
                                          @RequestParam(value = "image", required = false) MultipartFile image,
                                          @AuthenticationPrincipal UserDetails userDetails) {
-        
+
         Optional<User> adminUser = userService.findByUsername(userDetails.getUsername());
         if(adminUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
