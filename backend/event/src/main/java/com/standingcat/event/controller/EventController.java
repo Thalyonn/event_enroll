@@ -93,13 +93,31 @@ public class EventController {
         }
     }
 
+
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody Event event) {
+    public ResponseEntity<?> updateEvent(@PathVariable Long id,
+                                         @RequestParam("title") String title,
+                                         @RequestParam("description") String description,
+                                         @RequestParam(value = "descriptionMarkdown", required = false) String descriptionMarkdown,
+                                         @RequestParam("eventTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventTime,
+                                         @RequestParam("capacity") Integer capacity,
+                                         @RequestParam(value = "image", required = false) MultipartFile image) {
         try {
-            Event updatedEvent = eventService.updateEvent(event, id);
-            return ResponseEntity.ok(updatedEvent);
+            System.out.println("Trying to update event " + id);
+            System.out.println("Title of this event is " + title);
+            Event updatedEvent = eventService.updateEvent(  id,
+                                                            title,
+                                                            description,
+                                                            descriptionMarkdown,
+                                                            eventTime,
+                                                            capacity,
+                                                            image);
+            EventResponse response = new EventResponse(updatedEvent);
+            return ResponseEntity.ok(response);
         } catch(RuntimeException e) {
+            System.out.println("There was an error in the put " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }

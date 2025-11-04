@@ -8,6 +8,7 @@ import { CreateEventPage } from './pages/Create.page'
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { EventPage } from './pages/Event.page';
 import { ErrorNotFound } from './pages/ErrorNotFound.page';
+import { EditEventPage } from './pages/Edit.page';
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
           
         ),
+      },
+      {
+        path: '/edit/:id',
+        element: (
+          <ProtectedRoute requireAdmin>
+            <EditEventPage />
+          </ProtectedRoute>
+        )
       },
     ],
   },

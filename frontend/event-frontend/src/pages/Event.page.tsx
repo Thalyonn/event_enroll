@@ -175,7 +175,7 @@ export function EventPage() {
             >{isFull ? "Event is Full" : isEnrolled ? "Enrolled" : "Enroll"}</Button>
           {isAdmin && id && <>
           <ViewEnrolledModal eventId={eventIdNumber} onClose={onModalClose}/>
-          <Button color="yellow">Edit</Button>
+          <Button color="yellow" onClick={() => navigate(`/edit/${id}`)}>Edit</Button>
           <Button color="red">Hide</Button>
           
           </>

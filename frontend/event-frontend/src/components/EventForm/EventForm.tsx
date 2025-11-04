@@ -2,35 +2,59 @@ import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/c
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
 import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
 
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  eventTime: string;
+  capacity: number;
+  currentEnrollments: number;
+  descriptionMarkdown: string;
+}
+
 interface EventFormProps {
   mode: "create" | "edit";
-  eventData?: any;
+  eventData?: Event;
   onSubmit: (formData: FormData) => void;
 }
 
+
 export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
+  console.log("eventus")
+  console.log(eventData)
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
   
   
   const form = useForm({
     initialValues: {
-      title: eventData.title || '',
-      description: eventData.description || '',
-      eventTime: eventData.eventTime || '',
-      capacity: eventData.capacity || '',
-      imageUrl: eventData.imageUrl || '',
+      title: eventData?.title || '',
+      description: eventData?.description || '',
+      eventTime: eventData?.eventTime || '',
+      capacity: eventData?.capacity || '',
+      imageUrl: eventData?.imageUrl || '',
     },
     validate: {
       title: (value) => value.trim().length < 2,
     },
   });
+  useEffect(() => {
+    form.setValues({
+      title: eventData?.title,
+      description: eventData?.description,
+      eventTime: eventData?.eventTime,
+      capacity: eventData?.capacity,
+      imageUrl: eventData?.imageUrl,
 
+    })
+    setMarkdown(eventData?.descriptionMarkdown || "**Describe the event in more detail here!**")
+  },[eventData])
   const handleSubmit = async (values: typeof form.values) => {
     const formData = new FormData();
     formData.append('title', values.title);

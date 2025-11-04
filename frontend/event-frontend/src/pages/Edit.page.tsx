@@ -1,0 +1,61 @@
+import { EventForm } from "@/components/EventForm/EventForm";
+import { useEffect, useState } from "react";
+import { Container } from "@mantine/core";
+import { useParams } from "react-router-dom";
+
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  eventTime: string;
+  capacity: number;
+  currentEnrollments: number;
+  descriptionMarkdown: string;
+}
+
+export function EditEventPage() {
+    const { id } = useParams<{ id: string }>();
+    const [eventData, setEventData] = useState<Event | null>(null);
+    useEffect(() => {
+        console.log("Getting event for edit")
+        fetch(`http://localhost:8080/api/events/${id}`, {credentials: 'include'})
+        .then((res) => {
+        if(res.status === 404) {
+            throw new Error("Event not found");
+        }
+        if(!res.ok) {
+            throw new Error("Failed to fetch event");
+        }  
+        return res.json();
+        })
+        .then((data) => setEventData(data))
+        .catch((err) => {console.error('Failed to fetch events', err)
+        setEventData(null);
+        });
+        
+    },[id]);
+    const handleUpdateEvent = async (formData: FormData) => {
+        const res=await fetch(`http://localhost:8080/api/events/${id}`,
+            {
+                method: "PUT",
+                credentials: 'include',
+                body: formData,                
+             }
+             
+        )
+        if (!res.ok) console.error('Error on event update');
+        else console.log('Event updated succesfully:', await res.json());
+    }
+  return (
+
+    
+    <>
+      <Container>
+        <EventForm mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
+      </Container>
+
+      
+    </>
+  );
+}

@@ -103,6 +103,26 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    //to do: image upload
+    @Transactional
+    public Event updateEvent(Long eventId,
+                                     String title,
+                                     String description,
+                                     String descriptionMarkdown,
+                                     LocalDateTime eventTime,
+                                     Integer capacity,
+                                     MultipartFile image
+                                     ) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException("Event not found."));
+        event.setEventTime(eventTime);
+        event.setDescription(description);
+        event.setDescriptionMarkdown(descriptionMarkdown);
+        event.setCapacity(capacity);
+        event.setTitle(title);
+        return eventRepository.save(event);
+
+    }
+
     @Transactional
     public Event hideEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
