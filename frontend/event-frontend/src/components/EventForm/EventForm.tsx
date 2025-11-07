@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
+import { useNavigateBack } from '../SmartNavigate/NavigateBack';
 
 interface Event {
   id: number;
@@ -33,7 +34,7 @@ export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
   
-  
+  const goBack = useNavigateBack("/")
 
   
   
@@ -144,7 +145,7 @@ export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
         <Button type="submit" size="md" color='lime'>
           {mode === "create" ? "Create Event" : "Save Changes"}
         </Button>
-        <Button size="md" color='red'>
+        <Button size="md" color='red' onClick={goBack}>
           Go Back
         </Button>
       </Group>
