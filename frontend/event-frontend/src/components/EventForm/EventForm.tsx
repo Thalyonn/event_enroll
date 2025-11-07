@@ -2,7 +2,8 @@ import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/c
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
 import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
@@ -28,8 +29,12 @@ interface EventFormProps {
 export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
   console.log("eventus")
   console.log(eventData)
+  
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
+  
+  
+
   
   
   const form = useForm({
@@ -136,8 +141,11 @@ export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
       
 
       <Group justify="center" mt="xl">
-        <Button type="submit" size="md">
+        <Button type="submit" size="md" color='lime'>
           {mode === "create" ? "Create Event" : "Save Changes"}
+        </Button>
+        <Button size="md" color='red'>
+          Go Back
         </Button>
       </Group>
     </form>
