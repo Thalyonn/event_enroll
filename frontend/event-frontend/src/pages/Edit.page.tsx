@@ -51,7 +51,7 @@ export function EditEventPage() {
 
     
     <>
-      <Container>
+      <Container my="md" >
         <EventForm mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
       </Container>
 
