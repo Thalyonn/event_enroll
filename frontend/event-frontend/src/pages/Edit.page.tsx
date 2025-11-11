@@ -44,14 +44,18 @@ export function EditEventPage() {
              }
              
         )
-        if (!res.ok) console.error('Error on event update');
-        else console.log('Event updated succesfully:', await res.json());
+        if (!res.ok) {
+          console.error('Error on event update');
+        }
+        else {
+          console.log('Event updated succesfully:', await res.json());
+        }
     }
   return (
 
     
     <>
-      <Container my="md" >
+      <Container my="md">
         <EventForm mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
       </Container>
 

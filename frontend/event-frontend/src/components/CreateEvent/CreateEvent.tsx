@@ -48,6 +48,7 @@ export function CreateEvent() {
     } else {
       const createdEvent = await res.json();
       console.log('Event created:', createdEvent);
+      
     }
 
   };

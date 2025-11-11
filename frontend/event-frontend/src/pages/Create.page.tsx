@@ -1,7 +1,6 @@
-import { CreateEvent } from '../components/CreateEvent/CreateEvent';
 import { Container, Text } from '@mantine/core';
-import { EventForm } from '@/components/EventForm/EventForm';
-import { useState } from 'react';
+import { EventForm, EventFormHandle } from '@/components/EventForm/EventForm';
+import { useRef, useState } from 'react';
 
 export function CreateEventPage() {
   const [message, setMessage] = useState<string | null>(null)
@@ -23,13 +22,15 @@ export function CreateEventPage() {
       console.log('Event created:', createdEvent);
       setColor('teal');
       setMessage("Event succesfully created");
+      formRef.current?.resetForm();
     }
-    }
+  }
+  const formRef = useRef<EventFormHandle>(null);
   return (
     <>
       <Container>
         {message && <Text ta="center" color={color || "red"}>{message}</Text>}
-        <EventForm mode="create" onSubmit={handleSubmit}/>
+        <EventForm mode="create" onSubmit={handleSubmit} ref={formRef}/>
       </Container>
 
       

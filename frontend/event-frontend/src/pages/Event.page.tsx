@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { NothingFoundBackground } from "@/components/errors/404/NothingFoundBackground";
 import { useAuth } from "@/context/AuthContext";
-import MDEditor from "@uiw/react-md-editor";
-import rehypeSanitize from "rehype-sanitize";
 import { MarkdownComponent } from "@/components/MarkdownComponent/MarkdownComponent";
 import { ViewEnrolledModal } from "@/components/Modals/ViewEnrolled/ViewEnrolledModal";
 

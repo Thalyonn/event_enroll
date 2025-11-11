@@ -2,8 +2,7 @@ import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/c
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
 import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
-import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
@@ -22,12 +21,16 @@ interface Event {
 
 interface EventFormProps {
   mode: "create" | "edit";
-  eventData?: Event;
+  eventData?: Event | null;
   onSubmit: (formData: FormData) => void;
 }
 
+export interface EventFormHandle {
+  resetForm: () => void;
+}
 
-export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
+
+export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eventData, onSubmit} , ref) => {
   console.log("eventus")
   console.log(eventData)
   
@@ -78,6 +81,15 @@ export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
   };
 
   
+  useImperativeHandle(ref, () => ({
+    resetForm,
+  }));
+  
+  const resetForm = () => {
+    form.reset();
+    setMarkdown("**Describe the event in more detail here!**");
+    setFile(null);  
+  }
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -152,3 +164,5 @@ export function EventForm({mode, eventData, onSubmit} : EventFormProps) {
     </form>
   );
 }
+  
+);
