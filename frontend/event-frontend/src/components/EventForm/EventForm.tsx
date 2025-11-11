@@ -27,6 +27,7 @@ interface EventFormProps {
 
 export interface EventFormHandle {
   resetForm: () => void;
+  editDisableSuccess: () => void;
 }
 
 
@@ -36,8 +37,10 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
   
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("**Describe the event in more detail here!**");
+  const [submitColor , setSubmitColor] = useState<string>();
   
   const goBack = useNavigateBack("/")
+  
 
   
   
@@ -50,16 +53,33 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
       imageUrl: eventData?.imageUrl || '',
     },
     validate: {
-      title: (value) => value.trim().length < 2,
+      title: (value) => !value || value.trim().length < 2 ? 'Title needs to be more than 2 characters' : null,
+      eventTime: (value) => !value ? 'Select an event time' : null,
+      capacity: (value) => {
+        if(!value) {
+          return 'Enter a positive capacity'
+        }
+        const capacity = Number(value)
+        if(isNaN(capacity) || capacity < 0) {
+          return 'Enter a positive capacity';
+        }
+        return null;
+      }
     },
+    validateInputOnChange: true,
   });
+  const hasChanges =
+    form.isDirty() ||
+    markdown !== (eventData?.descriptionMarkdown || "**Describe the event in more detail here!**") ||
+    file !== null;
+
   useEffect(() => {
     form.setValues({
-      title: eventData?.title,
-      description: eventData?.description,
-      eventTime: eventData?.eventTime,
-      capacity: eventData?.capacity,
-      imageUrl: eventData?.imageUrl,
+      title: eventData?.title || '',
+      description: eventData?.description || '',
+      eventTime: eventData?.eventTime || '',
+      capacity: eventData?.capacity || '',
+      imageUrl: eventData?.imageUrl || '',
 
     })
     setMarkdown(eventData?.descriptionMarkdown || "**Describe the event in more detail here!**")
@@ -67,7 +87,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
   const handleSubmit = async (values: typeof form.values) => {
     const formData = new FormData();
     formData.append('title', values.title);
-    formData.append('description', values.description);
+    formData.append('description', values.description || '');
     formData.append('descriptionMarkdown', markdown || '')
     formData.append('eventTime', new Date(values.eventTime).toISOString());
     formData.append('capacity', values.capacity.toString());
@@ -83,12 +103,17 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
   
   useImperativeHandle(ref, () => ({
     resetForm,
+    editDisableSuccess,
   }));
   
   const resetForm = () => {
     form.reset();
     setMarkdown("**Describe the event in more detail here!**");
     setFile(null);  
+  }
+  const editDisableSuccess = () => {
+    form.resetDirty(form.values); // mark everything as clean again
+    setSubmitColor('gray');
   }
 
   return (
@@ -121,6 +146,8 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
         name="capacity"
         variant="filled"
         type="number"
+        onWheel={(e) => e.currentTarget.blur()} //disables scroll from changing numbers.
+        //  It was causing unintended behavior with laptop touchpad scroll gestures
         {...form.getInputProps('capacity')}
       />
       <DateTimePicker 
@@ -154,7 +181,12 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
       
 
       <Group justify="center" mt="xl">
-        <Button type="submit" size="md" color='lime'>
+        <Button 
+          type="submit" 
+          size="md" 
+          color={form.isValid() &&hasChanges ? 'lime' : 'gray'} 
+          disabled={!hasChanges || !form.isValid() }
+        >
           {mode === "create" ? "Create Event" : "Save Changes"}
         </Button>
         <Button size="md" color='red' onClick={goBack}>

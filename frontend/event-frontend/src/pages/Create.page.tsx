@@ -28,7 +28,7 @@ export function CreateEventPage() {
   const formRef = useRef<EventFormHandle>(null);
   return (
     <>
-      <Container>
+      <Container my="md">
         {message && <Text ta="center" color={color || "red"}>{message}</Text>}
         <EventForm mode="create" onSubmit={handleSubmit} ref={formRef}/>
       </Container>

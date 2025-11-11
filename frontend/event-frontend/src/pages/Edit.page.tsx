@@ -1,5 +1,5 @@
-import { EventForm } from "@/components/EventForm/EventForm";
-import { useEffect, useState } from "react";
+import { EventForm, EventFormHandle } from "@/components/EventForm/EventForm";
+import { useEffect, useRef, useState } from "react";
 import { Container } from "@mantine/core";
 import { useParams } from "react-router-dom";
 
@@ -49,14 +49,16 @@ export function EditEventPage() {
         }
         else {
           console.log('Event updated succesfully:', await res.json());
+          formRef.current?.editDisableSuccess();
         }
     }
+  const formRef = useRef<EventFormHandle>(null);
   return (
 
     
     <>
       <Container my="md">
-        <EventForm mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
+        <EventForm ref={formRef} mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
       </Container>
 
       
