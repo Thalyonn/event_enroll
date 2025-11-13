@@ -64,6 +64,23 @@ export function EventPage() {
     getEvent();
     checkEnrolled();
   }
+
+  const hideEvent = async () => {
+    fetch(`http://localhost:8080/api/events/${id}/hide`, {
+      method: 'PATCH',
+      credentials: "include",
+    })
+      .then((res) => {
+        if(!res.ok){
+          console.error('Error hiding event');
+        }
+        else {
+          console.error('Successfully hidden event');
+          navigate('/', { state: { showHideSuccess: true } });
+          //modal add todo
+        }
+      })
+  }
   
   useEffect(() => {
   getEvent();
@@ -174,7 +191,7 @@ export function EventPage() {
           {isAdmin && id && <>
           <ViewEnrolledModal eventId={eventIdNumber} onClose={onModalClose}/>
           <Button color="yellow" onClick={() => navigate(`/edit/${id}`)}>Edit</Button>
-          <Button color="red">Hide</Button>
+          <Button color="red" onClick={hideEvent}>Hide</Button>
           
           </>
           }

@@ -138,7 +138,8 @@ public class EventController {
     public ResponseEntity<?> hideEvent(@PathVariable Long id) {
         try {
             Event hiddenEvent = eventService.hideEvent(id);
-            return ResponseEntity.ok(hiddenEvent);
+            EventResponse response = new EventResponse(hiddenEvent);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
