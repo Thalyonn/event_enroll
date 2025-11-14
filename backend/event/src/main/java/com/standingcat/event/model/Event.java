@@ -33,6 +33,8 @@ public class Event
 
     private String imageUrl;
 
+    private String imagePublicId;
+
     @Column(nullable = false)
     private LocalDateTime eventTime;
 

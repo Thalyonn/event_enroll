@@ -165,7 +165,7 @@ export function EventPage() {
         >
           <Image
               
-              src="https://picsum.photos/id/237/200/300"
+              src={event?.imageUrl || "https://picsum.photos/id/237/200/300"}
               h={400} 
               fit="contain" 
               alt="Event Image"

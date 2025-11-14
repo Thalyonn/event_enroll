@@ -1,11 +1,14 @@
 package com.standingcat.event.service;
 
+import com.cloudinary.Cloudinary;
+import com.standingcat.event.exception.CloudinaryNoReturnException;
 import com.standingcat.event.exception.EventNotFoundException;
 import com.standingcat.event.exception.NoRolePermissionException;
 import com.standingcat.event.exception.UserNotFoundException;
 import com.standingcat.event.model.Event;
 import com.standingcat.event.model.User;
 import com.standingcat.event.repository.EventRepository;
+import jakarta.annotation.Resource;
 import jakarta.persistence.Table;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +33,9 @@ public class EventService {
 
     @Autowired
     private UserService userService;
+
+    @Resource
+    private Cloudinary cloudinary;
 
     public List<Event> getAllEvents() {
         return eventRepository.findByIsHiddenFalse();
@@ -47,11 +54,9 @@ public class EventService {
             Integer capacity,
             MultipartFile image,
             User adminUser) {
-        System.out.println(">>> [Service] Validating roles for user: " + adminUser.getUsername());
-        System.out.println(">>> [Service] DB roles: " + adminUser.getRoles());
+
 
         if(!adminUser.getRoles().contains("ROLE_ADMIN")) {
-            System.out.println(">>> [Service] User does NOT have ROLE_ADMIN. Throwing exception.");
             throw new NoRolePermissionException("Non-Admins cannot create events.");
         }
         Event event = new Event();
@@ -62,17 +67,41 @@ public class EventService {
         event.setCapacity(capacity);
         event.setOwner(adminUser);
 
+        String uploadedPublicId = null;
+
         if (image != null && !image.isEmpty()) {
             try {
-                String uploadDir = "uploads/";
-                Files.createDirectories(Paths.get(uploadDir));
-                String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
-                Path filePath = Paths.get(uploadDir, filename);
-                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                event.setImageUrl("/uploads/" + filename);
-                System.out.println(">>> [Service] Image saved to: " + filePath);
+                String uploadFolder = "user_uploads/" + adminUser.getId();
+                Map<String, Object> options = Map.of(
+                        "folder", uploadFolder,
+                        "use_filename", true,
+                        "unique_filename", true
+                );
+                Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                  image.getBytes(),
+                  options
+                );
+                uploadedPublicId = (String) uploadResult.get("public_id");
+                String imageUrl = (String) uploadResult.get("secure_url");
+                if(imageUrl == null) {
+                    throw new CloudinaryNoReturnException("Cloudinary did not return URL of uploaded image.");
+                }
+                event.setImageUrl(imageUrl);
+                event.setImagePublicId(uploadedPublicId);
+                Event saved = eventRepository.save(event);
+                System.out.println(">>> [Service] Event saved with ID: " + saved.getId());
+                return saved;
             } catch (IOException e) {
                 System.out.println(">>> [Service] Failed to save image: " + e.getMessage());
+                if(uploadedPublicId != null) {
+                    try{
+                        cloudinary.uploader().destroy(uploadedPublicId, Map.of());//
+                    } catch (Exception err) {
+                        //log could be appropriate here
+                        System.err.println("Failed to clean cloudinary upload: " + err.getMessage());
+                    }
+                }
+                //change with better runtime exception
                 throw new RuntimeException("Failed to save image", e);
             }
         }

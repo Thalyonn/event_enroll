@@ -20,7 +20,8 @@ export function EventCard({id, title, description, imageUrl, eventTime, capacity
       <Card.Section>
         <Image
         //set to imageUrl
-          src="https://picsum.photos/id/237/200/300"
+          src= {imageUrl || "https://picsum.photos/id/237/200/300"}
+          
           height={160}
           alt="Event Image"
         />
