@@ -103,17 +103,20 @@ public class EventController {
                                          @RequestParam(value = "descriptionMarkdown", required = false) String descriptionMarkdown,
                                          @RequestParam("eventTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime eventTime,
                                          @RequestParam("capacity") Integer capacity,
-                                         @RequestParam(value = "image", required = false) MultipartFile image) {
+                                         @RequestParam(value = "image", required = false) MultipartFile image,
+                                         @AuthenticationPrincipal UserDetails userDetails) {
         try {
             System.out.println("Trying to update event " + id);
             System.out.println("Title of this event is " + title);
+            Optional<User> adminUser = userService.findByUsername(userDetails.getUsername());
             Event updatedEvent = eventService.updateEvent(  id,
                                                             title,
                                                             description,
                                                             descriptionMarkdown,
                                                             eventTime,
                                                             capacity,
-                                                            image);
+                                                            image,
+                                                            adminUser.get());
             EventResponse response = new EventResponse(updatedEvent);
             return ResponseEntity.ok(response);
         } catch(RuntimeException e) {

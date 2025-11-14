@@ -140,16 +140,70 @@ public class EventService {
                                      String descriptionMarkdown,
                                      LocalDateTime eventTime,
                                      Integer capacity,
-                                     MultipartFile image
-                                     ) {
+                                     MultipartFile image,
+                                     User adminUser) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException("Event not found."));
+        if (!adminUser.getRoles().contains("ROLE_ADMIN")
+                || !event.getOwner().getId().equals(adminUser.getId())) {
+            throw new NoRolePermissionException("User cannot update this event.");
+        }
         event.setEventTime(eventTime);
         event.setDescription(description);
         event.setDescriptionMarkdown(descriptionMarkdown);
         event.setCapacity(capacity);
         event.setTitle(title);
-        return eventRepository.save(event);
+        //return eventRepository.save(event);
+        String previousPublicId = event.getImagePublicId();
+        String newPublicId = null;
 
+        try {
+            if (image != null && !image.isEmpty()) {
+                String userFolder = "user_uploads/" + adminUser.getId();
+
+                Map<String, Object> uploadOptions = Map.of(
+                        "folder", userFolder,
+                        "use_filename", true,
+                        "unique_filename", true
+                );
+
+                Map<?, ?> uploadResult = cloudinary.uploader().upload(image.getBytes(), uploadOptions);
+                String imageUrl = (String) uploadResult.get("secure_url");
+                newPublicId = (String) uploadResult.get("public_id");
+
+                if (imageUrl == null) {
+                    throw new RuntimeException("Cloudinary upload did not return a URL.");
+                }
+
+                event.setImageUrl(imageUrl);
+                event.setImagePublicId(newPublicId);
+            }
+
+            Event updatedEvent = eventRepository.save(event);
+
+            if (newPublicId != null && previousPublicId != null && !previousPublicId.isBlank()) {
+                try {
+                    cloudinary.uploader().destroy(previousPublicId, Map.of());
+                } catch (Exception cleanupError) {
+                    System.err.println("WARN: Failed to delete old Cloudinary image for event: "
+                            + cleanupError.getMessage());
+                }
+            }
+
+            return updatedEvent;
+
+        } catch (Exception e) {
+            //upload success but failure occurs after, need to clean up upload
+            if (newPublicId != null) {
+                try {
+                    cloudinary.uploader().destroy(newPublicId, Map.of());
+                } catch (Exception cleanupError) {
+                    System.err.println("WARNING: Failed to clean up new Cloudinary image after update failure: "
+                            + cleanupError.getMessage());
+                }
+            }
+            //change to better error
+            throw new RuntimeException("Event update failed: " + e.getMessage(), e);
+        }
     }
 
     @Transactional
