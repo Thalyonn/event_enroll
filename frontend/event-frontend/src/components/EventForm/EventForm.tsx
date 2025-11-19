@@ -1,8 +1,8 @@
 import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
-import { DropzoneButton } from '../DropzoneButton/DropzoneButton';
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { DropzoneButton, DropzoneButtonHandle } from '../DropzoneButton/DropzoneButton';
+import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import '@mantine/dates/styles.css';
 import MDEditor from "@uiw/react-md-editor"
 import rehypeSanitize from "rehype-sanitize";
@@ -110,12 +110,13 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
     form.reset();
     setMarkdown("**Describe the event in more detail here!**");
     setFile(null);  
+    formRef.current?.handleRemove();
   }
   const editDisableSuccess = () => {
     form.resetDirty(form.values); // mark everything as clean again
     setSubmitColor('gray');
   }
-
+  const formRef = useRef<DropzoneButtonHandle>(null);
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <Title
@@ -175,7 +176,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
       
 
       <Container mt="sm">
-        <DropzoneButton onFileDrop={(f) => setFile(f)} />
+        <DropzoneButton onFileDrop={(f) => setFile(f)} ref={formRef}/>
       </Container>
 
       

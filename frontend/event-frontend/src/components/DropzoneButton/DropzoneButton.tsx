@@ -1,24 +1,48 @@
-import { useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { IconCloudUpload, IconDownload, IconX } from '@tabler/icons-react';
 import { Button, Group, Text, useMantineTheme } from '@mantine/core';
-import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
+import { Dropzone, FileWithPath, MIME_TYPES } from '@mantine/dropzone';
 import classes from './DropzoneButton.module.css';
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 
-export function DropzoneButton({ onFileDrop }: { onFileDrop: (file: File) => void }) {
+export interface DropzoneButtonHandle {
+  handleRemove: () => void;
+}
+
+interface DropzoneButtonProps {
+  onFileDrop: (file: File | null) => void;
+}
+
+
+export const DropzoneButton= forwardRef<DropzoneButtonHandle, DropzoneButtonProps>(
+  ({ onFileDrop }, ref) => {
   const theme = useMantineTheme();
   const openRef = useRef<() => void>(null);
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleDrop = (files: FileWithPath[]) => {
+    if (files.length>0) {
+      setFile(files[0]);
+      onFileDrop(files[0]);
+    }
+
+  }
+
+  useImperativeHandle(ref, () => ({
+      handleRemove,
+  }));
+
+  const handleRemove = () => {
+    setFile(null);
+    onFileDrop(null);
+  }
 
   return (
     <div className={classes.wrapper}>
       <Dropzone
         openRef={openRef}
-        onDrop={(files) => {
-          if (files.length > 0) {
-            onFileDrop(files[0]);
-          }
-        }}
+        onDrop={handleDrop}
         className={classes.dropzone}
         radius="md"
         accept={[MIME_TYPES.png, MIME_TYPES.jpeg]}
@@ -40,7 +64,7 @@ export function DropzoneButton({ onFileDrop }: { onFileDrop: (file: File) => voi
           <Text ta="center" fw={700} fz="lg" mt="xl">
             <Dropzone.Accept>Drop images here</Dropzone.Accept>
             <Dropzone.Reject>Only PNG or JPEG files less than 5MB</Dropzone.Reject>
-            <Dropzone.Idle>Upload profile picture</Dropzone.Idle>
+            <Dropzone.Idle>{file ? "Replace Image" : "Upload Image"}</Dropzone.Idle>
           </Text>
 
           <Text className={classes.description}>
@@ -49,9 +73,26 @@ export function DropzoneButton({ onFileDrop }: { onFileDrop: (file: File) => voi
         </div>
       </Dropzone>
 
-      <Button className={classes.control} size="sm" radius="xl" onClick={() => openRef.current?.()}>
-        Select file
-      </Button>
+      
+
+      {
+        file && (
+          <Group justify="space-between" mt="xs">
+            <Text>Image to upload: <strong>{file.name}</strong></Text>
+            <Button
+            variant="subtle"
+            color="red"
+            size="xs"
+            leftSection={<IconX size={14} />}
+            onClick={handleRemove}
+            >
+              Remove
+            </Button>
+          </Group>
+        )
+      }
     </div>
   );
 }
+
+)
