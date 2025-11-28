@@ -17,7 +17,9 @@ interface Event {
 export function EditEventPage() {
     const { id } = useParams<{ id: string }>();
     const [eventData, setEventData] = useState<Event | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     useEffect(() => {
+      setIsSubmitting(true);
         console.log("Getting event for edit")
         fetch(`http://localhost:8080/api/events/${id}`, {credentials: 'include'})
         .then((res) => {
@@ -33,9 +35,10 @@ export function EditEventPage() {
         .catch((err) => {console.error('Failed to fetch events', err)
         setEventData(null);
         });
-        
+        setIsSubmitting(false);
     },[id]);
     const handleUpdateEvent = async (formData: FormData) => {
+      setIsSubmitting(true);
         const res=await fetch(`http://localhost:8080/api/events/${id}`,
             {
                 method: "PUT",
@@ -51,6 +54,7 @@ export function EditEventPage() {
           console.log('Event updated succesfully:', await res.json());
           formRef.current?.editDisableSuccess();
         }
+        setIsSubmitting(false);
     }
   const formRef = useRef<EventFormHandle>(null);
   return (
@@ -58,7 +62,7 @@ export function EditEventPage() {
     
     <>
       <Container my="md">
-        <EventForm ref={formRef} mode="edit" eventData={eventData} onSubmit={handleUpdateEvent}/>
+        <EventForm ref={formRef} mode="edit" eventData={eventData} onSubmit={handleUpdateEvent} isSubmitting={isSubmitting}/>
       </Container>
 
       

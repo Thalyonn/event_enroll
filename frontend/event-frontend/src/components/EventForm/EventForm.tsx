@@ -122,7 +122,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
     <div style={{ position: 'relative' }}>
 
     
-    <LoadingOverlay visible={isSubmitting} loaderProps={{ children: 'Submitting...' }} />
+    <LoadingOverlay visible={isSubmitting} loaderProps={{ children: 'Wait...' }} />
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <Title
         order={2}
