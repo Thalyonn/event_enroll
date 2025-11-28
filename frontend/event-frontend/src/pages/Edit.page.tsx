@@ -1,6 +1,6 @@
 import { EventForm, EventFormHandle } from "@/components/EventForm/EventForm";
 import { useEffect, useRef, useState } from "react";
-import { Container } from "@mantine/core";
+import { Container, Text } from "@mantine/core";
 import { useParams } from "react-router-dom";
 
 interface Event {
@@ -16,6 +16,8 @@ interface Event {
 
 export function EditEventPage() {
     const { id } = useParams<{ id: string }>();
+    const [message, setMessage] = useState<string | null>(null);
+    const [color, setColor] = useState<string | null>(null);
     const [eventData, setEventData] = useState<Event | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     useEffect(() => {
@@ -25,9 +27,13 @@ export function EditEventPage() {
         .then((res) => {
         if(res.status === 404) {
             throw new Error("Event not found");
+            setColor("red");
+            setMessage("Event not found");
         }
         if(!res.ok) {
             throw new Error("Failed to fetch event");
+            setColor("red");
+            setMessage("Failed to fetch event");
         }  
         return res.json();
         })
@@ -49,11 +55,16 @@ export function EditEventPage() {
         )
         if (!res.ok) {
           console.error('Error on event update');
+          setColor("red");
+          setMessage("Event update failed");
         }
         else {
           console.log('Event updated succesfully:', await res.json());
           formRef.current?.editDisableSuccess();
+          setColor("teal");
+          setMessage("Event edited successfully");
         }
+        
         setIsSubmitting(false);
     }
   const formRef = useRef<EventFormHandle>(null);
@@ -62,6 +73,7 @@ export function EditEventPage() {
     
     <>
       <Container my="md">
+        {message && <Text ta="center" color={color || "red"}>{message}</Text>}
         <EventForm ref={formRef} mode="edit" eventData={eventData} onSubmit={handleUpdateEvent} isSubmitting={isSubmitting}/>
       </Container>
 
