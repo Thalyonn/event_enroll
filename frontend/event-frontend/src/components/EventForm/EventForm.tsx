@@ -1,4 +1,4 @@
-import { Button, Container, Group, Textarea, TextInput, Title } from '@mantine/core';
+import { Button, Container, Group, Textarea, TextInput, Title, LoadingOverlay } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { DateTimePicker } from '@mantine/dates';
 import { DropzoneButton, DropzoneButtonHandle } from '../DropzoneButton/DropzoneButton';
@@ -23,6 +23,7 @@ interface EventFormProps {
   mode: "create" | "edit";
   eventData?: Event | null;
   onSubmit: (formData: FormData) => void;
+  isSubmitting: boolean;
 }
 
 export interface EventFormHandle {
@@ -31,7 +32,7 @@ export interface EventFormHandle {
 }
 
 
-export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eventData, onSubmit} , ref) => {
+export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eventData, onSubmit, isSubmitting} , ref) => {
   console.log("eventus")
   console.log(eventData)
   
@@ -118,6 +119,10 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
   }
   const formRef = useRef<DropzoneButtonHandle>(null);
   return (
+    <div style={{ position: 'relative' }}>
+
+    
+    <LoadingOverlay visible={isSubmitting} loaderProps={{ children: 'Submitting...' }} />
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <Title
         order={2}
@@ -195,7 +200,10 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(({mode, eve
         </Button>
       </Group>
     </form>
+  </div>
   );
+  
 }
+
   
 );

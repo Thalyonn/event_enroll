@@ -5,8 +5,9 @@ import { useRef, useState } from 'react';
 export function CreateEventPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [color, setColor] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmittting] = useState<boolean>(false)
   const handleSubmit = async (formData: FormData) => {
-
+    setIsSubmittting(true);
     const res = await fetch('http://localhost:8080/api/events', {
       method: 'POST',
       body: formData,
@@ -24,13 +25,14 @@ export function CreateEventPage() {
       setMessage("Event succesfully created");
       formRef.current?.resetForm();
     }
+    setIsSubmittting(false);
   }
   const formRef = useRef<EventFormHandle>(null);
   return (
     <>
       <Container my="md">
         {message && <Text ta="center" color={color || "red"}>{message}</Text>}
-        <EventForm mode="create" onSubmit={handleSubmit} ref={formRef}/>
+        <EventForm mode="create" onSubmit={handleSubmit} ref={formRef} isSubmitting={isSubmitting}/>
       </Container>
 
       
