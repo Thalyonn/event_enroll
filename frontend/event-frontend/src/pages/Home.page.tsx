@@ -25,7 +25,7 @@ export function HomePage() {
 
   return (
     <>
-      <Welcome />
+      
       <ColorSchemeToggle />
       <Container size="lg" my="xl"> 
         <EventGrid />
